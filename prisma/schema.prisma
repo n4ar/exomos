@@ -1,0 +1,163 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  extensions = [vector]
+}
+
+// User model (synced with Supabase Auth)
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  subjects     Subject[]
+  exams        Exam[]
+  answers      Answer[]
+  performances Performance[]
+
+  @@map("users")
+}
+
+// Subject model (e.g., Physics, Chemistry, Calculus)
+model Subject {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  description String?
+  color       String   @default("#6366f1") // Hex color for UI
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes  Note[]
+  exams  Exam[]
+  performances Performance[]
+
+  @@map("subjects")
+  @@index([userId])
+}
+
+// Note model (uploaded PDF/images)
+model Note {
+  id         String   @id @default(uuid())
+  subjectId  String   @map("subject_id")
+  title      String
+  fileUrl    String   @map("file_url") // Cloudflare R2 URL
+  fileType   String   @map("file_type") // pdf, image/png, etc.
+  fileSize   Int      @map("file_size") // in bytes
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
+  // Relations
+  subject Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  chunks  NoteChunk[]
+
+  @@map("notes")
+  @@index([subjectId])
+}
+
+// NoteChunk model (text chunks with embeddings for RAG)
+model NoteChunk {
+  id         String                     @id @default(uuid())
+  noteId     String                     @map("note_id")
+  content    String                     @db.Text
+  pageNumber Int?                       @map("page_number")
+  embedding  Unsupported("vector(768)")? // Gemini embedding dimension
+  createdAt  DateTime                   @default(now()) @map("created_at")
+
+  // Relations
+  note      Note       @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  questions Question[]
+
+  @@map("note_chunks")
+  @@index([noteId])
+}
+
+// Exam model
+model Exam {
+  id          String    @id @default(uuid())
+  subjectId   String    @map("subject_id")
+  userId      String    @map("user_id")
+  title       String
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+
+  // Relations
+  subject   Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions Question[]
+
+  @@map("exams")
+  @@index([subjectId])
+  @@index([userId])
+}
+
+// Question model
+model Question {
+  id              String   @id @default(uuid())
+  examId          String   @map("exam_id")
+  sourceChunkId   String?  @map("source_chunk_id") // For grounding
+  questionText    String   @map("question_text") @db.Text
+  options         Json     // Array of options: ["A", "B", "C", "D"]
+  correctAnswer   String   @map("correct_answer")
+  explanation     String?  @db.Text
+  orderIndex      Int      @map("order_index") // Question order in exam
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  exam        Exam       @relation(fields: [examId], references: [id], onDelete: Cascade)
+  sourceChunk NoteChunk? @relation(fields: [sourceChunkId], references: [id], onDelete: SetNull)
+  answers     Answer[]
+
+  @@map("questions")
+  @@index([examId])
+  @@index([sourceChunkId])
+}
+
+// Answer model (user's answers)
+model Answer {
+  id             String   @id @default(uuid())
+  questionId     String   @map("question_id")
+  userId         String   @map("user_id")
+  selectedAnswer String   @map("selected_answer")
+  isCorrect      Boolean  @map("is_correct")
+  answeredAt     DateTime @default(now()) @map("answered_at")
+
+  // Relations
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("answers")
+  @@index([questionId])
+  @@index([userId])
+  @@unique([questionId, userId]) // One answer per question per user
+}
+
+// Performance model (analytics)
+model Performance {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  subjectId String   @map("subject_id")
+  topic     String   // Topic/chapter name
+  score     Float    // Percentage score
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@map("performances")
+  @@index([userId])
+  @@index([subjectId])
+}
