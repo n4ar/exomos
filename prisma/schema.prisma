@@ -50,13 +50,17 @@ model Subject {
 
 // Note model (uploaded PDF/images)
 model Note {
-  id         String   @id @default(uuid())
-  subjectId  String   @map("subject_id")
-  title      String
-  fileUrl    String   @map("file_url") // Cloudflare R2 URL
-  fileType   String   @map("file_type") // pdf, image/png, etc.
-  fileSize   Int      @map("file_size") // in bytes
-  uploadedAt DateTime @default(now()) @map("uploaded_at")
+  id          String   @id @default(uuid())
+  subjectId   String   @map("subject_id")
+  title       String
+  description String?  @db.Text
+  fileUrl     String   @map("file_url") // Cloudflare R2 URL
+  fileKey     String   @map("file_key") // R2 storage key
+  fileName    String   @map("file_name")
+  fileType    String   @map("file_type") // pdf, image/png, etc.
+  fileSize    Int      @map("file_size") // in bytes
+  pageCount   Int?     @map("page_count")
+  uploadedAt  DateTime @default(now()) @map("uploaded_at")
 
   // Relations
   subject Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
@@ -85,13 +89,16 @@ model NoteChunk {
 
 // Exam model
 model Exam {
-  id          String    @id @default(uuid())
-  subjectId   String    @map("subject_id")
-  userId      String    @map("user_id")
-  title       String
-  description String?
-  createdAt   DateTime  @default(now()) @map("created_at")
-  completedAt DateTime? @map("completed_at")
+  id             String    @id @default(uuid())
+  subjectId      String    @map("subject_id")
+  userId         String    @map("user_id")
+  title          String
+  description    String?
+  difficulty     String    @default("medium") // easy, medium, hard
+  totalQuestions Int       @default(0) @map("total_questions")
+  status         String    @default("draft") // draft, published, completed
+  createdAt      DateTime  @default(now()) @map("created_at")
+  completedAt    DateTime? @map("completed_at")
 
   // Relations
   subject   Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)

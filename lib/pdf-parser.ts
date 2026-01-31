@@ -1,4 +1,5 @@
 import { PDFParse } from 'pdf-parse'
+import { extractTextWithOCR } from './typhoon-ocr'
 
 export interface ParsedPDF {
   text: string
@@ -7,10 +8,12 @@ export interface ParsedPDF {
     text: string
   }>
   totalPages: number
+  usedOCR?: boolean
 }
 
 /**
  * Parse PDF from buffer and extract text
+ * Falls back to OCR if text extraction yields insufficient content
  */
 export async function parsePDF(buffer: Buffer): Promise<ParsedPDF> {
   const parser = new PDFParse({ data: buffer })
@@ -18,13 +21,40 @@ export async function parsePDF(buffer: Buffer): Promise<ParsedPDF> {
   try {
     const result = await parser.getText()
 
+    // Check if extracted text is sufficient
+    const textContent = result.text.trim()
+    const isTextSufficient = textContent.length > 100 // Threshold: at least 100 chars
+
+    if (isTextSufficient) {
+      // Regular text-based PDF
+      return {
+        text: result.text,
+        pages: result.pages.map((page, index) => ({
+          pageNumber: index + 1,
+          text: page.text,
+        })),
+        totalPages: result.total,
+        usedOCR: false,
+      }
+    }
+
+    // Text extraction yielded insufficient content - likely scanned PDF
+    console.log('Insufficient text extracted, falling back to OCR...')
+
+    const ocrResult = await extractTextWithOCR(buffer)
+
+    if (!ocrResult.success) {
+      throw new Error('ไม่สามารถอ่านข้อความจาก PDF ได้ กรุณาตรวจสอบว่าไฟล์เป็น PDF ที่ถูกต้อง')
+    }
+
     return {
-      text: result.text,
-      pages: result.pages.map((page, index) => ({
-        pageNumber: index + 1,
-        text: page.text,
+      text: ocrResult.text,
+      pages: ocrResult.pages.map(p => ({
+        pageNumber: p.pageNumber,
+        text: p.text,
       })),
-      totalPages: result.total,
+      totalPages: ocrResult.pages.length,
+      usedOCR: true,
     }
   } finally {
     await parser.destroy()
@@ -95,6 +125,7 @@ export function chunkTextByPages(
  */
 export function cleanText(text: string): string {
   return text
+    .replace(/\x00/g, '') // Remove null bytes (PostgreSQL UTF-8 doesn't support them)
     .replace(/\s+/g, ' ') // Replace multiple spaces with single space
     .replace(/\n{3,}/g, '\n\n') // Replace multiple newlines with double newline
     .trim()

@@ -48,12 +48,12 @@ export default function SignInPage() {
         <div className="hidden lg:block space-y-8 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-sm font-medium text-primary">AI-Powered Learning</span>
+            <span className="text-sm font-medium text-primary">การเรียนรู้ด้วย AI</span>
           </div>
 
           <div className="space-y-4">
             <h1 className="text-6xl font-bold tracking-tight">
-              Welcome to<br />
+              ยินดีต้อนรับสู่<br />
               <span className="gradient-text">Exomos</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-md">
@@ -69,7 +69,7 @@ export default function SignInPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="font-semibold mb-1">Smart Notes</h3>
+              <h3 className="font-semibold mb-1">โน้ตอัจฉริยะ</h3>
               <p className="text-sm text-muted-foreground">อัปโหลดและจัดการโน้ต</p>
             </div>
 
@@ -79,7 +79,7 @@ export default function SignInPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 className="font-semibold mb-1">AI Prediction</h3>
+              <h3 className="font-semibold mb-1">การทำนายด้วย AI</h3>
               <p className="text-sm text-muted-foreground">เก็งข้อสอบอัจฉริยะ</p>
             </div>
           </div>

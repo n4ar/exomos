@@ -1,0 +1,143 @@
+{
+  "tech_stack": [
+    "TypeScript",
+    "Next.js 16 (App Router)",
+    "React 19",
+    "Prisma ORM v7",
+    "PostgreSQL",
+    "pgvector",
+    "Supabase Auth",
+    "Google Gemini AI",
+    "Cloudflare R2",
+    "Tailwind CSS",
+    "Sonner (Toast)",
+    "PDF.js"
+  ],
+  "features": [
+    {
+      "name": "Authentication",
+      "description": "User authentication using Supabase with sign in, sign up, and session management",
+      "files": [
+        "app/auth/signin/page.tsx",
+        "app/auth/signup/page.tsx",
+        "lib/supabase/server.ts",
+        "lib/supabase/client.ts"
+      ]
+    },
+    {
+      "name": "Subject Management",
+      "description": "Create, read, update, and delete subjects with color coding",
+      "files": [
+        "app/subjects/page.tsx",
+        "app/subjects/SubjectsClient.tsx",
+        "app/api/subjects/route.ts",
+        "app/api/subjects/[id]/route.ts"
+      ]
+    },
+    {
+      "name": "Note Upload & Processing",
+      "description": "Upload PDF notes, parse content, chunk text, generate embeddings, and store in vector database",
+      "files": [
+        "app/notes/page.tsx",
+        "app/notes/NotesClient.tsx",
+        "app/api/notes/route.ts",
+        "app/api/notes/[id]/route.ts",
+        "lib/rag-pipeline.ts",
+        "lib/pdf-parser.ts",
+        "lib/embeddings.ts",
+        "lib/r2.ts"
+      ]
+    },
+    {
+      "name": "RAG Pipeline",
+      "description": "Retrieval-Augmented Generation pipeline for processing notes and generating embeddings",
+      "files": [
+        "lib/rag-pipeline.ts",
+        "lib/embeddings.ts",
+        "lib/vector-search.ts"
+      ]
+    },
+    {
+      "name": "Exam Generation",
+      "description": "Generate AI-powered exams from uploaded notes using vector similarity search and Gemini AI",
+      "files": [
+        "app/api/exams/generate/route.ts",
+        "lib/exam-generator.ts",
+        "lib/vector-search.ts"
+      ]
+    },
+    {
+      "name": "Exam Taking",
+      "description": "Take exams with real-time progress tracking, answer submission, and scoring",
+      "files": [
+        "app/exams/[id]/page.tsx",
+        "app/exams/[id]/ExamTakingClient.tsx",
+        "app/api/exams/[id]/route.ts",
+        "app/api/exams/[id]/submit/route.ts"
+      ]
+    },
+    {
+      "name": "Exam List & Management",
+      "description": "View all exams, filter by subject, and manage exam lifecycle",
+      "files": [
+        "app/exams/page.tsx",
+        "app/exams/ExamsClient.tsx",
+        "app/api/exams/route.ts"
+      ]
+    },
+    {
+      "name": "Vector Search",
+      "description": "Semantic search using pgvector for finding relevant note chunks",
+      "files": [
+        "lib/vector-search.ts"
+      ]
+    },
+    {
+      "name": "PDF Parser",
+      "description": "Parse PDF files, extract text content, and chunk into manageable pieces",
+      "files": [
+        "lib/pdf-parser.ts"
+      ]
+    },
+    {
+      "name": "Embeddings Generation",
+      "description": "Generate text embeddings using Google Gemini text-embedding-004 model (768 dimensions)",
+      "files": [
+        "lib/embeddings.ts"
+      ]
+    },
+    {
+      "name": "File Storage",
+      "description": "Upload and manage files in Cloudflare R2 (S3-compatible storage)",
+      "files": [
+        "lib/r2.ts"
+      ]
+    },
+    {
+      "name": "Database Models",
+      "description": "Prisma schema defining User, Subject, Note, NoteChunk, Exam, Question, Answer, and Performance models",
+      "files": [
+        "prisma/schema.prisma",
+        "lib/prisma.ts"
+      ]
+    },
+    {
+      "name": "UI Components",
+      "description": "Reusable UI components including BentoCard, SubjectBadge, FileUpload, LoadingSpinner, EmptyState",
+      "files": [
+        "components/BentoCard.tsx",
+        "components/SubjectBadge.tsx",
+        "components/FileUpload.tsx",
+        "components/LoadingSpinner.tsx",
+        "components/EmptyState.tsx"
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "description": "Main dashboard showing overview of subjects, notes, and exams with statistics",
+      "files": [
+        "app/page.tsx"
+      ]
+    }
+  ]
+}

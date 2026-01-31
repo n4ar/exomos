@@ -24,12 +24,24 @@ export interface UploadFileParams {
  * Upload a file to Cloudflare R2
  */
 export async function uploadFile({ key, body, contentType, metadata }: UploadFileParams) {
+  // Sanitize metadata to remove invalid characters for S3 headers
+  const sanitizedMetadata = metadata
+    ? Object.entries(metadata).reduce((acc, [key, value]) => {
+        // Only include ASCII characters in metadata
+        const sanitizedValue = value.replace(/[^\x00-\x7F]/g, '') // Remove non-ASCII
+        if (sanitizedValue) {
+          acc[key] = sanitizedValue
+        }
+        return acc
+      }, {} as Record<string, string>)
+    : undefined
+
   const command = new PutObjectCommand({
     Bucket: BUCKET_NAME,
     Key: key,
     Body: body,
     ContentType: contentType,
-    Metadata: metadata,
+    Metadata: sanitizedMetadata,
   })
 
   await r2Client.send(command)

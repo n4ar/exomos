@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import prisma from '@/lib/prisma'
+import { ensureUserExists } from '@/lib/auth-helpers'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,9 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Ensure user exists in Prisma database
+    await ensureUserExists(user)
 
     const body = await request.json()
     const { name, description, color } = body
@@ -27,12 +31,17 @@ export async function POST(request: NextRequest) {
         description,
         color: color || '#6366f1',
       },
+      include: {
+        _count: {
+          select: {
+            notes: true,
+            exams: true,
+          },
+        },
+      },
     })
 
-    return NextResponse.json({
-      success: true,
-      data: subject,
-    })
+    return NextResponse.json(subject)
   } catch (error) {
     console.error('Error creating subject:', error)
     return NextResponse.json(
@@ -52,6 +61,9 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Ensure user exists in Prisma database
+    await ensureUserExists(user)
 
     const subjects = await prisma.subject.findMany({
       where: {

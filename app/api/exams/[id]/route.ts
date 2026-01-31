@@ -29,7 +29,7 @@ export async function GET(
         },
         questions: {
           orderBy: {
-            order: 'asc',
+            orderIndex: 'asc',
           },
         },
         answers: true,

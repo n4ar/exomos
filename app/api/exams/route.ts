@@ -49,10 +49,7 @@ export async function POST(request: NextRequest) {
       questionTypes,
     })
 
-    return NextResponse.json({
-      success: true,
-      data: result,
-    })
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Error generating exam:', error)
     return NextResponse.json(

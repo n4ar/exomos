@@ -4,7 +4,6 @@ import { parsePDF, chunkTextByPages, cleanText } from '@/lib/pdf-parser'
 import { generateEmbeddings } from '@/lib/embeddings'
 
 export interface ProcessNoteParams {
-  userId: string
   subjectId: string
   file: File
   title: string
@@ -26,14 +25,23 @@ export interface ProcessNoteResult {
  * 5. Store chunks and embeddings in database
  */
 export async function processNote({
-  userId,
   subjectId,
   file,
   title,
   description,
 }: ProcessNoteParams): Promise<ProcessNoteResult> {
+  // Get userId from subject
+  const subject = await prisma.subject.findUnique({
+    where: { id: subjectId },
+    select: { userId: true },
+  })
+
+  if (!subject) {
+    throw new Error('Subject not found')
+  }
+
   // 1. Upload file to R2
-  const fileKey = generateFileKey(userId, file.name)
+  const fileKey = generateFileKey(subject.userId, file.name)
   const buffer = Buffer.from(await file.arrayBuffer())
 
   const { url: fileUrl } = await uploadFile({
@@ -41,7 +49,6 @@ export async function processNote({
     body: buffer,
     contentType: file.type,
     metadata: {
-      userId,
       subjectId,
       originalName: file.name,
     },
@@ -53,13 +60,13 @@ export async function processNote({
   // 3. Create note record
   const note = await prisma.note.create({
     data: {
-      userId,
       subjectId,
       title,
       description,
       fileUrl,
       fileKey,
       fileName: file.name,
+      fileType: file.type,
       fileSize: file.size,
       pageCount: parsed.totalPages,
     },
@@ -72,21 +79,26 @@ export async function processNote({
   const texts = chunks.map((chunk) => cleanText(chunk.content))
   const embeddings = await generateEmbeddings(texts)
 
-  // 6. Store chunks with embeddings in database
-  await prisma.$executeRaw`
-    INSERT INTO note_chunks (id, note_id, content, page_number, embedding, created_at)
-    VALUES ${chunks.map((chunk, index) => {
-      const embedding = embeddings[index].embedding
-      return prisma.$queryRaw`(
+  // 6. Store chunks with embeddings in database using Prisma raw SQL
+  // Use $executeRaw with tagged template for SQL injection safety
+  // Note: Prisma createMany doesn't support Unsupported types like vector
+  for (const [index, chunk] of chunks.entries()) {
+    const embedding = JSON.stringify(embeddings[index].embedding)
+    // Clean content to remove null bytes and other invalid UTF-8 sequences
+    const cleanedContent = chunk.content.replace(/\x00/g, '').trim()
+
+    await prisma.$executeRaw`
+      INSERT INTO note_chunks (id, note_id, content, page_number, embedding, created_at)
+      VALUES (
         gen_random_uuid(),
         ${note.id}::uuid,
-        ${chunk.content},
-        ${chunk.pageNumber || null},
+        ${cleanedContent},
+        ${chunk.pageNumber},
         ${embedding}::vector,
         NOW()
-      )`
-    })}
-  `
+      )
+    `
+  }
 
   return {
     noteId: note.id,
@@ -128,13 +140,21 @@ export async function searchChunks({
   // Generate embedding for query
   const queryEmbedding = await generateEmbedding(query)
 
+  // Convert embedding array to PostgreSQL vector format: [1,2,3]
+  const embeddingStr = `[${queryEmbedding.join(',')}]`
+
+  // Build the query conditionally
+  const subjectFilter = subjectId ? `AND n.subject_id::text = $3` : ''
+  const params = subjectId ? [embeddingStr, userId, subjectId, limit] : [embeddingStr, userId, limit]
+  const limitParam = subjectId ? '$4' : '$3'
+
   // Search using pgvector cosine similarity
-  const results = await prisma.$queryRaw<SearchResult[]>`
-    SELECT
+  const results = await prisma.$queryRawUnsafe<SearchResult[]>(
+    `SELECT
       nc.id as "chunkId",
       nc.content,
       nc.page_number as "pageNumber",
-      1 - (nc.embedding <=> ${queryEmbedding}::vector) as similarity,
+      1 - (nc.embedding <=> $1::vector) as similarity,
       jsonb_build_object(
         'id', n.id,
         'title', n.title,
@@ -142,11 +162,13 @@ export async function searchChunks({
       ) as note
     FROM note_chunks nc
     INNER JOIN notes n ON nc.note_id = n.id
-    WHERE n.user_id = ${userId}::uuid
-    ${subjectId ? prisma.$queryRaw`AND n.subject_id = ${subjectId}::uuid` : prisma.$queryRaw``}
-    ORDER BY nc.embedding <=> ${queryEmbedding}::vector
-    LIMIT ${limit}
-  `
+    INNER JOIN subjects s ON n.subject_id = s.id
+    WHERE s.user_id::text = $2
+    ${subjectFilter}
+    ORDER BY nc.embedding <=> $1::vector
+    LIMIT ${limitParam}`,
+    ...params
+  )
 
   return results
 }
@@ -168,8 +190,10 @@ export async function getExamContext(
     const chunks = await prisma.noteChunk.findMany({
       where: {
         note: {
-          userId,
           subjectId,
+          subject: {
+            userId,
+          },
         },
       },
       take: 20,

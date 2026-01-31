@@ -1,0 +1,434 @@
+[
+  {
+    "id": "TC001",
+    "title": "User Sign-Up Success",
+    "description": "Verify that a new user can successfully sign up with valid credentials.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the sign-up page."
+      },
+      {
+        "type": "action",
+        "description": "Input valid user details including email and password."
+      },
+      {
+        "type": "action",
+        "description": "Submit the sign-up form."
+      },
+      {
+        "type": "assertion",
+        "description": "User account is created, user is authenticated, and redirected to dashboard."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "User Sign-In Success",
+    "description": "Validate that a registered user can log in with correct credentials.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the sign-in page."
+      },
+      {
+        "type": "action",
+        "description": "Enter valid registered email and password."
+      },
+      {
+        "type": "action",
+        "description": "Click the sign-in button."
+      },
+      {
+        "type": "assertion",
+        "description": "User is authenticated and redirected to the main dashboard."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "User Sign-In Failure with Invalid Credentials",
+    "description": "Ensure system denies access when signing in with invalid credentials.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the sign-in page."
+      },
+      {
+        "type": "action",
+        "description": "Enter incorrect email or password."
+      },
+      {
+        "type": "action",
+        "description": "Click sign-in button."
+      },
+      {
+        "type": "assertion",
+        "description": "User receives an error message and is not authenticated."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Create New Subject Success",
+    "description": "Verify that an authenticated user can create a new subject with valid inputs.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login and navigate to the subject management page."
+      },
+      {
+        "type": "action",
+        "description": "Input subject name and select a color."
+      },
+      {
+        "type": "action",
+        "description": "Submit the subject creation form."
+      },
+      {
+        "type": "assertion",
+        "description": "New subject appears in the subject list with correct color coding."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Prevent Subject Creation with Empty Name",
+    "description": "Confirm that subject creation with an empty name is blocked with an error.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to subject creation form."
+      },
+      {
+        "type": "action",
+        "description": "Leave subject name empty and select a color."
+      },
+      {
+        "type": "action",
+        "description": "Submit the form."
+      },
+      {
+        "type": "assertion",
+        "description": "Error message displayed indicating that subject name is required."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Upload PDF Notes Successfully",
+    "description": "Verify that users can upload PDF notes, and the content is parsed and chunked properly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the notes upload page."
+      },
+      {
+        "type": "action",
+        "description": "Select a valid PDF file and upload."
+      },
+      {
+        "type": "assertion",
+        "description": "PDF is parsed, text chunks are generated, embeddings created, and stored successfully."
+      },
+      {
+        "type": "assertion",
+        "description": "User is notified of successful upload."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Upload Rejection for Non-PDF Files",
+    "description": "Ensure the system rejects uploading non-PDF files with appropriate error.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the notes upload page."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to upload a file that is not PDF format."
+      },
+      {
+        "type": "assertion",
+        "description": "Upload is blocked, and error message indicates invalid file type."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Disable Exam Generation for Subjects Without Notes",
+    "description": "Verify that exam generation option is disabled and proper error is shown if no notes uploaded for the subject.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Select a subject known to have no uploaded notes."
+      },
+      {
+        "type": "assertion",
+        "description": "Exam generation button is disabled."
+      },
+      {
+        "type": "assertion",
+        "description": "User is shown error message stating no notes available for exam generation."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Generate Exam Successfully",
+    "description": "Validate AI-powered exam generation from notes succeeds with correct parameters and meets performance criteria.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Select a subject with existing notes."
+      },
+      {
+        "type": "action",
+        "description": "Configure exam parameters: number of questions and difficulty."
+      },
+      {
+        "type": "action",
+        "description": "Start exam generation."
+      },
+      {
+        "type": "assertion",
+        "description": "Exam is generated successfully within 30 seconds, containing requested number and difficulty of questions."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Handle Exam Generation Failure Gracefully",
+    "description": "Ensure system shows error notification if exam generation fails or exceeds time limits.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Trigger exam generation but simulate AI or vector search failure or timeout."
+      },
+      {
+        "type": "assertion",
+        "description": "System notifies user with a clear error message about generation failure."
+      },
+      {
+        "type": "assertion",
+        "description": "User can retry exam generation without application crash."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Load Exam for Taking Within Performance Limits",
+    "description": "Verify that loading an exam for taking completes within 2 seconds.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to an existing exam's take page."
+      },
+      {
+        "type": "assertion",
+        "description": "Exam data including questions load and render within 2 seconds."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Take Exam with Real-Time Progress Tracking",
+    "description": "Ensure real-time progress updates while answering questions and submitting answers.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Start taking a loaded exam."
+      },
+      {
+        "type": "action",
+        "description": "Answer questions one by one, observe progress updates."
+      },
+      {
+        "type": "assertion",
+        "description": "Progress bar or indicator updates immediately with each answered question."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Answer Submission and Scoring Response Time",
+    "description": "Verify that answer submission and scoring responses complete within 1 second.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Submit an answer for a question."
+      },
+      {
+        "type": "assertion",
+        "description": "System returns scoring feedback and updates state within 1 second."
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Handle Empty or Missing Answers Gracefully",
+    "description": "Confirm the system allows exam to proceed if user skips or leaves answers empty without affecting score calculation incorrectly.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Skip answering a question and proceed to next."
+      },
+      {
+        "type": "action",
+        "description": "Complete exam with one or more unanswered questions."
+      },
+      {
+        "type": "assertion",
+        "description": "System records unanswered questions as empty, does not count towards positive or negative score undesirably."
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Prevent Duplicate Exam Submissions",
+    "description": "Verify the UI disables multiple submissions of the same exam to prevent duplicate entries.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Submit an exam answer or final exam submission."
+      },
+      {
+        "type": "assertion",
+        "description": "Submit button or UI controls become disabled or loading state to prevent duplicate submission."
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "View Completed Exam Results with Detailed Feedback",
+    "description": "Check that users can open completed exams and see score, answer correctness, and explanation for each question.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to completed exams list."
+      },
+      {
+        "type": "action",
+        "description": "Select a completed exam to view details."
+      },
+      {
+        "type": "assertion",
+        "description": "Display detailed score, individual question correctness, and explanations."
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Exam List Filtering by Subject",
+    "description": "Verify filtering functionality in the exam list page by selecting different subjects.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to exams list page."
+      },
+      {
+        "type": "action",
+        "description": "Select a subject filter from dropdown or filters."
+      },
+      {
+        "type": "assertion",
+        "description": "Exam list updates and shows only exams related to selected subject."
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Delete Exam Entry",
+    "description": "Ensure user can delete an exam from exam management UI and exam is removed permanently.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to exams list."
+      },
+      {
+        "type": "action",
+        "description": "Select an exam and initiate delete action."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm deletion prompt, upon confirmation exam is removed from database and list."
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Database Integrity on Exam, Question, and Answer Creation",
+    "description": "Check database records are correctly created and linked when generating exams, questions, and user answers.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Generate an exam with questions."
+      },
+      {
+        "type": "action",
+        "description": "Answer some questions and submit."
+      },
+      {
+        "type": "assertion",
+        "description": "Database entries exist for exams, questions, answers, and performance tracking with proper foreign keys."
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "System Uptime and Availability Monitoring",
+    "description": "Verify through monitoring tools and logs that system uptime exceeds 99%.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Monitor system uptime over continuous period using health check endpoints."
+      },
+      {
+        "type": "assertion",
+        "description": "System uptime reports show availability is above 99%."
+      }
+    ]
+  }
+]

@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma'
 import { getExamContext } from '@/lib/rag-pipeline'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
 export interface GenerateExamParams {
   userId: string
@@ -104,19 +104,47 @@ ${topics && topics.length > 0 ? `- หัวข้อที่ต้องคร
     throw new Error('ไม่สามารถสร้างข้อสอบได้ กรุณาลองใหม่อีกครั้ง')
   }
 
-  // 4. Store questions in database
+  // 4. Validate and fix questions
+  const validatedQuestions = questions.map((q, index) => {
+    // Ensure options exist for multiple choice and true/false questions
+    let options = q.options || []
+
+    // If it's a multiple choice or true/false question but has no options, create default ones
+    if (q.type === 'true_false' && options.length === 0) {
+      options = ['จริง', 'เท็จ']
+      // Make sure correctAnswer is one of these
+      if (!['จริง', 'เท็จ', 'True', 'False', 'true', 'false'].includes(q.correctAnswer)) {
+        q.correctAnswer = 'จริง' // Default to true
+      }
+    } else if (q.type === 'multiple_choice' && options.length < 2) {
+      // If multiple choice has less than 2 options, it's invalid
+      console.warn(`Question ${index + 1} is multiple choice but has insufficient options:`, q)
+      // Try to create basic options including the correct answer
+      options = [
+        q.correctAnswer,
+        'ไม่ทราบ',
+        'ไม่มีข้อมูล',
+        'ไม่ถูกต้อง'
+      ]
+    }
+
+    return {
+      ...q,
+      options,
+    }
+  })
+
+  // 5. Store questions in database
   const createdQuestions = await Promise.all(
-    questions.map(async (q, index) => {
+    validatedQuestions.map(async (q, index) => {
       return prisma.question.create({
         data: {
           examId: exam.id,
-          question: q.question,
-          type: q.type,
-          options: q.options || [],
+          questionText: q.question,
+          options: q.options,
           correctAnswer: q.correctAnswer,
           explanation: q.explanation,
-          difficulty: q.difficulty,
-          order: index + 1,
+          orderIndex: index + 1,
         },
       })
     })
@@ -169,13 +197,17 @@ export async function submitExam({ examId, userId, answers }: SubmitAnswerParams
     const question = exam.questions.find((q) => q.id === answer.questionId)
     if (!question) continue
 
-    const isCorrect = answer.answer.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase()
+    // Skip if no answer provided
+    if (!answer.answer || answer.answer.trim() === '') continue
+
+    const userAnswer = answer.answer
+    const isCorrect = userAnswer.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase()
     if (isCorrect) correctCount++
 
     answerRecords.push({
-      examId,
       questionId: answer.questionId,
-      userAnswer: answer.answer,
+      userId,
+      selectedAnswer: userAnswer,
       isCorrect,
     })
   }
@@ -187,12 +219,11 @@ export async function submitExam({ examId, userId, answers }: SubmitAnswerParams
 
   const score = (correctCount / exam.totalQuestions) * 100
 
-  // 4. Update exam status and score
+  // 4. Update exam status
   await prisma.exam.update({
     where: { id: examId },
     data: {
       status: 'completed',
-      score,
       completedAt: new Date(),
     },
   })
@@ -202,10 +233,8 @@ export async function submitExam({ examId, userId, answers }: SubmitAnswerParams
     data: {
       userId,
       subjectId: exam.subjectId,
-      examId,
+      topic: exam.title,
       score,
-      correctAnswers: correctCount,
-      totalQuestions: exam.totalQuestions,
     },
   })
 

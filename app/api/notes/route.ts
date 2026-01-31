@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { processNote } from '@/lib/rag-pipeline'
 
+// Configure route segment to allow 100MB uploads
+export const runtime = 'nodejs'
+export const maxDuration = 300 // 5 minutes timeout for large files
+
 export async function POST(request: NextRequest) {
   try {
     // 1. Check authentication
@@ -35,16 +39,46 @@ export async function POST(request: NextRequest) {
 
     // 4. Process note with RAG pipeline
     const result = await processNote({
-      userId: user.id,
       subjectId,
       file,
       title,
       description,
     })
 
+    // 5. Fetch the created note with all required fields
+    const prisma = (await import('@/lib/prisma')).default
+    const note = await prisma.note.findUnique({
+      where: { id: result.noteId },
+      include: {
+        subject: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+          },
+        },
+        _count: {
+          select: {
+            chunks: true,
+          },
+        },
+      },
+    })
+
+    if (!note) {
+      throw new Error('Failed to fetch created note')
+    }
+
+    // 6. Map to NotesClient format
     return NextResponse.json({
-      success: true,
-      data: result,
+      id: note.id,
+      title: note.title,
+      fileName: note.fileName,
+      fileUrl: note.fileUrl,
+      pageCount: note.pageCount,
+      chunkCount: note._count.chunks,
+      createdAt: note.uploadedAt,
+      subject: note.subject,
     })
   } catch (error) {
     console.error('Error uploading note:', error)
@@ -74,7 +108,9 @@ export async function GET(request: NextRequest) {
 
     const notes = await prisma.note.findMany({
       where: {
-        userId: user.id,
+        subject: {
+          userId: user.id,
+        },
         ...(subjectId && { subjectId }),
       },
       include: {

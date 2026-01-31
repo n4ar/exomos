@@ -1,0 +1,24 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000/exams",
+  "loginUser": "near.nitchakun@gmail.com",
+  "loginPassword": "Slotpro2009",
+  "executionArgs": {
+    "projectName": "exomos",
+    "projectPath": "/Users/near/Documents/Programming/Tanut/exomos",
+    "testIds": [
+      "TC009",
+      "TC011",
+      "TC012",
+      "TC013",
+      "TC014"
+    ],
+    "additionalInstruction": "Focus on testing exam generation, loading, taking with real-time progress tracking, answer submission, and handling empty answers. Use Thai language for error messages.",
+    "envs": {
+      "API_KEY": "sk-user-z8P8kpolLSEbphbzM4GZFnXK0wvK64S9rbz6k72vJ0GoOsgmK4r0JhS9Zs9P6T4fm3OPQHXRCnFaLo6xlexP_2HbRYGdAQj411CRamGywle4JuSVx0JvP1MVt0MrlG4-Ns4"
+    }
+  },
+  "proxy": "http://05bbca1d-b0b7-4371-888a-71179770857e:DfGoZMuphs681kVNSvdmhboTDPxWPoeL@tun.testsprite.com:8080"
+}
