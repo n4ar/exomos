@@ -89,19 +89,19 @@ export default async function NotesPage() {
                 href="/dashboard"
                 className="px-4 py-2 text-sm rounded-lg hover:bg-muted transition-colors"
               >
-                Dashboard
+                หน้าหลัก
               </Link>
               <Link
                 href="/subjects"
                 className="px-4 py-2 text-sm rounded-lg hover:bg-muted transition-colors"
               >
-                Subjects
+                วิชา
               </Link>
               <Link
                 href="/notes"
                 className="px-4 py-2 text-sm rounded-lg bg-primary/10 text-primary font-medium"
               >
-                Notes
+                โน้ต
               </Link>
             </nav>
 
@@ -123,10 +123,10 @@ export default async function NotesPage() {
         <div className="mb-8 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20 mb-4">
             <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-            <span className="text-xs font-medium text-accent">Notes</span>
+            <span className="text-xs font-medium text-accent">โน้ต</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-2">
-            Your <span className="gradient-text">Study Notes</span>
+            <span className="gradient-text">โน้ตเรียน</span>ของคุณ
           </h1>
           <p className="text-lg text-muted-foreground">
             อัปโหลดและจัดการโน้ตเรียนของคุณ
@@ -151,7 +151,7 @@ export default async function NotesPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{notes.length}</p>
-                <p className="text-sm text-muted-foreground">Total Notes</p>
+                <p className="text-sm text-muted-foreground">โน้ตทั้งหมด</p>
               </div>
             </div>
           </div>
@@ -168,7 +168,7 @@ export default async function NotesPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{subjects.length}</p>
-                <p className="text-sm text-muted-foreground">Subjects</p>
+                <p className="text-sm text-muted-foreground">วิชา</p>
               </div>
             </div>
           </div>

@@ -97,7 +97,7 @@ export default async function SubjectDetailPage({ params }: SubjectDetailPagePro
                 href="/dashboard"
                 className="px-4 py-2 text-sm rounded-lg hover:bg-muted transition-colors"
               >
-                Dashboard
+                หน้าหลัก
               </Link>
               <Link
                 href="/subjects"

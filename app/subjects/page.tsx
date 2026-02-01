@@ -53,19 +53,19 @@ export default async function SubjectsPage() {
                 href="/dashboard"
                 className="px-4 py-2 text-sm rounded-lg hover:bg-muted transition-colors"
               >
-                Dashboard
+                หน้าหลัก
               </Link>
               <Link
                 href="/subjects"
                 className="px-4 py-2 text-sm rounded-lg bg-primary/10 text-primary font-medium"
               >
-                Subjects
+                วิชา
               </Link>
               <Link
                 href="/notes"
                 className="px-4 py-2 text-sm rounded-lg hover:bg-muted transition-colors"
               >
-                Notes
+                โน้ต
               </Link>
             </nav>
 
@@ -87,10 +87,10 @@ export default async function SubjectsPage() {
         <div className="mb-8 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs font-medium text-primary">Subjects</span>
+            <span className="text-xs font-medium text-primary">วิชา</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-2">
-            Manage Your <span className="gradient-text">Subjects</span>
+            จัดการ<span className="gradient-text">วิชาเรียน</span>ของคุณ
           </h1>
           <p className="text-lg text-muted-foreground">
             จัดการวิชาเรียนและดูภาพรวมของโน้ตและข้อสอบ
@@ -108,7 +108,7 @@ export default async function SubjectsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{subjects.length}</p>
-                <p className="text-sm text-muted-foreground">Total Subjects</p>
+                <p className="text-sm text-muted-foreground">วิชาทั้งหมด</p>
               </div>
             </div>
           </div>

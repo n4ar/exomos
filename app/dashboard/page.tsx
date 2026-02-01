@@ -134,7 +134,7 @@ export default async function DashboardPage() {
                 href="/dashboard"
                 className="px-4 py-2 text-sm rounded-lg bg-primary/10 text-primary font-medium"
               >
-                Dashboard
+                หน้าหลัก
               </Link>
               <Link
                 href="/subjects"
@@ -168,7 +168,7 @@ export default async function DashboardPage() {
         <div className="mb-8 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs font-medium text-primary">Dashboard</span>
+            <span className="text-xs font-medium text-primary">หน้าหลัก</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-2">
             ยินดีต้อนรับกลับมา,{' '}
