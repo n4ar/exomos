@@ -10,8 +10,8 @@ const ibmPlexSansThai = IBM_Plex_Sans_Thai({
 });
 
 export const metadata: Metadata = {
-  title: "Exomos - Personal AI Exam Predictor",
-  description: "AI-powered exam prediction system for students",
+  title: "Exomos",
+  description: "AI-powered exam system for students",
 };
 
 export default function RootLayout({
