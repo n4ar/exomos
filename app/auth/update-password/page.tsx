@@ -52,22 +52,17 @@ export default function UpdatePasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-lg text-center space-y-8 animate-fade-in-up">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-accent/10 border-2 border-accent">
-            <svg className="w-10 h-10 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-lg text-center space-y-8 animate-scale-in">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-accent">
+            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
 
           <div className="space-y-4">
-            <h1 className="text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              สำเร็จ!
-            </h1>
-            <div className="ornamental-divider">
-              <span className="text-2xl text-accent">❖</span>
-            </div>
-            <p className="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
+            <h1 className="text-4xl font-bold">สำเร็จ!</h1>
+            <p className="text-lg text-muted-foreground max-w-md mx-auto">
               รหัสผ่านของคุณถูกอัปเดตเรียบร้อยแล้ว กำลังนำคุณไปยังแดชบอร์ด...
             </p>
           </div>
@@ -77,79 +72,93 @@ export default function UpdatePasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-[0.02]">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, currentColor 35px, currentColor 36px),
-                           repeating-linear-gradient(-45deg, transparent, transparent 35px, currentColor 35px, currentColor 36px)`
-        }} />
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(99,102,241,0.1),transparent_50%)]" />
 
-      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-12 items-center relative z-10">
-        {/* Left Column - Editorial Content */}
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center relative z-10">
+        {/* Left Column - Hero */}
         <div className="hidden lg:block space-y-8 animate-fade-in">
-          <div className="space-y-4">
-            <div className="inline-block px-4 py-1 border border-accent/20 text-xs tracking-[0.2em] uppercase text-accent font-medium">
-              Security Update
-            </div>
-            <h1 className="text-6xl lg:text-7xl leading-[0.95] tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
-              New<br />
-              <span className="italic font-light">Password</span>
-            </h1>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20">
+            <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+            <span className="text-sm font-medium text-accent">Security Update</span>
           </div>
 
-          <div className="space-y-6 text-lg leading-relaxed text-muted-foreground max-w-md">
-            <p className="drop-cap">
-              ตั้งรหัสผ่านใหม่ที่แข็งแรงและปลอดภัย เพื่อปกป้องบัญชีและข้อมูลการเรียนของคุณ
+          <div className="space-y-4">
+            <h1 className="text-6xl font-bold tracking-tight">
+              ตั้งรหัสผ่าน<br />
+              <span className="gradient-text">ใหม่</span>
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-md">
+              สร้างรหัสผ่านใหม่ที่แข็งแรงเพื่อปกป้องบัญชีของคุณ
             </p>
-            <div className="ornamental-divider">
-              <span className="text-2xl text-accent">❖</span>
-            </div>
-            <div className="space-y-3 text-base">
-              <p className="font-medium text-foreground">คำแนะนำสำหรับรหัสผ่านที่ดี:</p>
-              <ul className="space-y-2">
-                <li className="flex items-start gap-3">
-                  <span className="text-accent mt-1">✦</span>
-                  <span>ใช้อย่างน้อย 8 ตัวอักษร</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-accent mt-1">✦</span>
-                  <span>ผสมตัวอักษรพิมพ์ใหญ่และเล็ก</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-accent mt-1">✦</span>
-                  <span>เพิ่มตัวเลขและสัญลักษณ์พิเศษ</span>
-                </li>
-              </ul>
-            </div>
+          </div>
+
+          {/* Tips */}
+          <div className="space-y-4 pt-8">
+            {[
+              {
+                icon: (
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                  </svg>
+                ),
+                title: 'อย่างน้อย 6 ตัวอักษร',
+                desc: 'ยิ่งยาวยิ่งปลอดภัย'
+              },
+              {
+                icon: (
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                ),
+                title: 'ผสมตัวอักษร ตัวเลข สัญลักษณ์',
+                desc: 'เพิ่มความปลอดภัย'
+              },
+              {
+                icon: (
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                ),
+                title: 'ไม่ซ้ำกับรหัสผ่านเดิม',
+                desc: 'เริ่มต้นใหม่อย่างปลอดภัย'
+              },
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-4 p-4 rounded-xl bg-card/50 border border-border hover:border-primary/30 transition-all">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-primary flex-shrink-0">
+                  {item.icon}
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-1">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground">{item.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Right Column - Update Password Form */}
-        <div className="w-full max-w-md mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: '0.2s', opacity: 0 }}>
-          <div className="bg-card border border-border shadow-2xl p-8 lg:p-12">
+        <div className="w-full max-w-md mx-auto lg:mx-0 animate-scale-in" style={{ animationDelay: '0.1s', opacity: 0 }}>
+          <div className="bento-card backdrop-blur-xl bg-card/80 border-2">
             {/* Header */}
-            <div className="mb-8 text-center lg:text-left">
-              <h2 className="text-3xl mb-2" style={{ fontFamily: 'var(--font-display)' }}>
-                ตั้งรหัสผ่านใหม่
-              </h2>
-              <p className="text-muted-foreground text-sm">
-                กรอกรหัสผ่านใหม่ของคุณ
-              </p>
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold mb-2">ตั้งรหัสผ่านใหม่</h2>
+              <p className="text-muted-foreground">กรอกรหัสผ่านใหม่ของคุณ</p>
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="mb-6 p-4 border-l-4 border-destructive bg-destructive/5 animate-slide-in-right">
-                <p className="text-sm text-destructive">{error}</p>
+              <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/20 animate-slide-in-right">
+                <p className="text-sm text-destructive font-medium">{error}</p>
               </div>
             )}
 
             {/* Form */}
-            <form onSubmit={handleUpdatePassword} className="space-y-6">
+            <form onSubmit={handleUpdatePassword} className="space-y-5">
               <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium tracking-wide uppercase text-xs">
+                <label htmlFor="password" className="block text-sm font-medium">
                   รหัสผ่านใหม่
                 </label>
                 <input
@@ -160,15 +169,14 @@ export default function UpdatePasswordPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 outline-none text-base"
+                  className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                   placeholder="••••••••"
-                  style={{ fontFamily: 'var(--font-body)' }}
                 />
-                <p className="text-xs text-muted-foreground italic">อย่างน้อย 6 ตัวอักษร</p>
+                <p className="text-xs text-muted-foreground">อย่างน้อย 6 ตัวอักษร</p>
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium tracking-wide uppercase text-xs">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium">
                   ยืนยันรหัสผ่านใหม่
                 </label>
                 <input
@@ -179,30 +187,23 @@ export default function UpdatePasswordPage() {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-background border border-input focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200 outline-none text-base"
+                  className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                   placeholder="••••••••"
-                  style={{ fontFamily: 'var(--font-body)' }}
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-primary text-primary-foreground font-medium tracking-wide uppercase text-sm hover:bg-primary/90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
-                style={{ fontFamily: 'var(--font-display)' }}
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary to-accent text-white font-semibold hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
               >
                 <span className="relative z-10">
                   {loading ? 'กำลังอัปเดต...' : 'อัปเดตรหัสผ่าน'}
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                <div className="absolute inset-0 bg-gradient-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </button>
             </form>
           </div>
-
-          {/* Footer Note */}
-          <p className="mt-6 text-center text-xs text-muted-foreground italic">
-            Exomos — Personal AI Exam Predictor
-          </p>
         </div>
       </div>
     </div>
