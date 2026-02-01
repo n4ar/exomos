@@ -6,8 +6,8 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '100mb',
     },
-    // Middleware body size limit for API routes
-    middlewareClientMaxBodySize: 100 * 1024 * 1024, // 100MB in bytes
+    // Proxy body size limit for API routes (renamed from middlewareClientMaxBodySize)
+    proxyClientMaxBodySize: 100 * 1024 * 1024, // 100MB in bytes
   },
   // External packages for server
   serverExternalPackages: ['pdf-parse'],
