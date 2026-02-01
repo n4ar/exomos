@@ -39,11 +39,6 @@ const DIFFICULTY_OPTIONS = [
   { value: 'hard', label: 'ยาก', description: 'การแก้ปัญหาขั้นสูง', color: 'text-red-600' },
 ] as const
 
-const QUESTION_TYPES = [
-  { value: 'multiple_choice', label: 'ปรนัย', icon: 'checkbox' },
-  { value: 'true_false', label: 'จริง/เท็จ', icon: 'check' },
-] as const
-
 export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(0)
@@ -56,13 +51,13 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
   const [notes, setNotes] = useState<Note[]>([])
   const [loadingNotes, setLoadingNotes] = useState(false)
   const [title, setTitle] = useState('')
-  const [questionCount, setQuestionCount] = useState(10)
+  const [multipleChoiceCount, setMultipleChoiceCount] = useState(5)
+  const [trueFalseCount, setTrueFalseCount] = useState(5)
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium')
   const [topics, setTopics] = useState('')
-  const [selectedQuestionTypes, setSelectedQuestionTypes] = useState<string[]>([
-    'multiple_choice',
-    'true_false',
-  ])
+
+  const totalQuestions = multipleChoiceCount + trueFalseCount
+  const maxQuestions = 30
 
   const steps = ['เลือกวิชา', 'เลือกโน้ต', 'ตั้งค่าข้อสอบ', 'สร้างข้อสอบ']
 
@@ -87,12 +82,14 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
     }
   }, [selectedSubject])
 
-  const toggleQuestionType = (type: string) => {
-    if (selectedQuestionTypes.includes(type)) {
-      setSelectedQuestionTypes(selectedQuestionTypes.filter((t) => t !== type))
-    } else {
-      setSelectedQuestionTypes([...selectedQuestionTypes, type])
-    }
+  const handleMultipleChoiceChange = (value: number) => {
+    const newValue = Math.max(0, Math.min(value, maxQuestions - trueFalseCount))
+    setMultipleChoiceCount(newValue)
+  }
+
+  const handleTrueFalseChange = (value: number) => {
+    const newValue = Math.max(0, Math.min(value, maxQuestions - multipleChoiceCount))
+    setTrueFalseCount(newValue)
   }
 
   const toggleNoteSelection = (noteId: string) => {
@@ -128,8 +125,12 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
       toast.error('กรุณาใส่ชื่อข้อสอบ')
       return
     }
-    if (currentStep === 2 && selectedQuestionTypes.length === 0) {
-      toast.error('กรุณาเลือกประเภทคำถามอย่างน้อย 1 ประเภท')
+    if (currentStep === 2 && totalQuestions === 0) {
+      toast.error('กรุณากำหนดจำนวนข้อสอบอย่างน้อย 1 ข้อ')
+      return
+    }
+    if (currentStep === 2 && totalQuestions > maxQuestions) {
+      toast.error(`จำนวนข้อสอบต้องไม่เกิน ${maxQuestions} ข้อ`)
       return
     }
     setCurrentStep((prev) => prev + 1)
@@ -162,11 +163,10 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
           subjectId: selectedSubject,
           noteIds: selectedNoteIds.length > 0 ? selectedNoteIds : undefined,
           title: title.trim(),
-          questionCount,
+          multipleChoiceCount,
+          trueFalseCount,
           difficulty,
           topics: topicsArray.length > 0 ? topicsArray : undefined,
-          questionTypes:
-            selectedQuestionTypes.length > 0 ? selectedQuestionTypes : undefined,
         }),
       })
 
@@ -469,25 +469,64 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
 
               {/* Question Count */}
               <BentoCard>
-                <label className="block text-sm font-medium mb-2">
-                  จำนวนข้อ
+                <label className="block text-sm font-medium mb-4">
+                  จำนวนข้อสอบ (สูงสุด {maxQuestions} ข้อ)
                 </label>
-                <div className="space-y-3">
+
+                {/* Multiple Choice */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium">ปรนัย</label>
+                    <div className="px-3 py-1 rounded-lg bg-primary/10 text-primary font-bold">
+                      {multipleChoiceCount} ข้อ
+                    </div>
+                  </div>
                   <input
                     type="range"
-                    min="5"
-                    max="50"
-                    value={questionCount}
-                    onChange={(e) => setQuestionCount(parseInt(e.target.value))}
+                    min="0"
+                    max={maxQuestions - trueFalseCount}
+                    value={multipleChoiceCount}
+                    onChange={(e) => handleMultipleChoiceChange(parseInt(e.target.value))}
                     className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
                   />
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">5 ข้อ</span>
-                    <div className="px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold">
-                      {questionCount}
+                </div>
+
+                {/* True/False */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium">จริง/เท็จ</label>
+                    <div className="px-3 py-1 rounded-lg bg-accent/10 text-accent font-bold">
+                      {trueFalseCount} ข้อ
                     </div>
-                    <span className="text-sm text-muted-foreground">50 ข้อ</span>
                   </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max={maxQuestions - multipleChoiceCount}
+                    value={trueFalseCount}
+                    onChange={(e) => handleTrueFalseChange(parseInt(e.target.value))}
+                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-accent"
+                  />
+                </div>
+
+                {/* Total Display */}
+                <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">รวมทั้งหมด</span>
+                    <span className={`text-2xl font-bold ${totalQuestions > maxQuestions ? 'text-destructive' : 'gradient-text'}`}>
+                      {totalQuestions} ข้อ
+                    </span>
+                  </div>
+                  {totalQuestions > maxQuestions && (
+                    <p className="text-xs text-destructive mt-2">
+                      ⚠️ จำนวนข้อสอบเกิน {maxQuestions} ข้อ
+                    </p>
+                  )}
+                  {totalQuestions === 0 && (
+                    <p className="text-xs text-amber-600 mt-2">
+                      ⚠️ กรุณากำหนดจำนวนข้อสอบอย่างน้อย 1 ข้อ
+                    </p>
+                  )}
                 </div>
               </BentoCard>
 
@@ -513,50 +552,6 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
                       <div className="text-xs text-muted-foreground">
                         {option.description}
                       </div>
-                    </button>
-                  ))}
-                </div>
-              </BentoCard>
-
-              {/* Question Types */}
-              <BentoCard>
-                <label className="block text-sm font-medium mb-3">
-                  ประเภทคำถาม
-                </label>
-                <div className="space-y-2">
-                  {QUESTION_TYPES.map((type) => (
-                    <button
-                      key={type.value}
-                      type="button"
-                      onClick={() => toggleQuestionType(type.value)}
-                      className={`w-full p-4 rounded-xl border-2 transition-all duration-300 flex items-center gap-3 ${
-                        selectedQuestionTypes.includes(type.value)
-                          ? 'border-primary bg-primary/10'
-                          : 'border-border hover:border-primary/30'
-                      }`}
-                    >
-                      <div
-                        className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                          selectedQuestionTypes.includes(type.value)
-                            ? 'border-primary bg-primary'
-                            : 'border-muted-foreground'
-                        }`}
-                      >
-                        {selectedQuestionTypes.includes(type.value) && (
-                          <svg
-                            className="w-3 h-3 text-white"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        )}
-                      </div>
-                      <span className="font-medium">{type.label}</span>
                     </button>
                   ))}
                 </div>
@@ -603,7 +598,11 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">จำนวนข้อ</p>
-                    <p className="font-medium">{questionCount}</p>
+                    <div className="space-y-1">
+                      <p className="font-medium text-sm">ปรนัย: {multipleChoiceCount} ข้อ</p>
+                      <p className="font-medium text-sm">จริง/เท็จ: {trueFalseCount} ข้อ</p>
+                      <p className="font-bold text-primary">รวม: {totalQuestions} ข้อ</p>
+                    </div>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">ระดับความยาก</p>
@@ -611,22 +610,6 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
                       difficulty === 'easy' ? 'ง่าย' :
                       difficulty === 'medium' ? 'ปานกลาง' : 'ยาก'
                     }</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">ประเภทคำถาม</p>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedQuestionTypes.map((type) => {
-                        const typeData = QUESTION_TYPES.find((t) => t.value === type)
-                        return (
-                          <span
-                            key={type}
-                            className="text-xs px-2 py-1 rounded bg-primary/10 text-primary"
-                          >
-                            {typeData?.label}
-                          </span>
-                        )
-                      })}
-                    </div>
                   </div>
                 </div>
               </BentoCard>
@@ -678,7 +661,11 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">จำนวนข้อ:</span>
-                  <span className="font-medium">{questionCount}</span>
+                  <div className="text-right">
+                    <div className="font-medium">ปรนัย: {multipleChoiceCount}</div>
+                    <div className="font-medium">จริง/เท็จ: {trueFalseCount}</div>
+                    <div className="font-bold text-primary">รวม: {totalQuestions}</div>
+                  </div>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">ระดับความยาก:</span>

@@ -76,7 +76,7 @@ export default async function ExamTakingPage({
               </Link>
               <div>
                 <h1 className="text-xl font-bold">Exomos</h1>
-                <p className="text-xs text-muted-foreground">AI Exam Predictor</p>
+                <p className="text-xs text-muted-foreground">ระบบทำนายข้อสอบด้วย AI</p>
               </div>
             </div>
 
@@ -107,7 +107,7 @@ export default async function ExamTakingPage({
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          Back to Dashboard
+          กลับไปหน้าหลัก
         </Link>
 
         <ExamTakingClient exam={exam} />

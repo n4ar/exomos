@@ -9,10 +9,10 @@ export interface GenerateExamParams {
   userId: string
   subjectId: string
   title: string
-  questionCount: number
+  multipleChoiceCount: number
+  trueFalseCount: number
   difficulty: 'easy' | 'medium' | 'hard'
   topics?: string[]
-  questionTypes?: ('multiple_choice' | 'true_false')[]
   noteIds?: string[]
 }
 
@@ -32,12 +32,14 @@ export async function generateExam({
   userId,
   subjectId,
   title,
-  questionCount,
+  multipleChoiceCount,
+  trueFalseCount,
   difficulty,
   topics,
-  questionTypes = ['multiple_choice', 'true_false'],
   noteIds,
 }: GenerateExamParams) {
+  const totalQuestions = multipleChoiceCount + trueFalseCount
+
   // 1. Get relevant context from user's notes using RAG
   const context = await getExamContext(userId, subjectId, topics, noteIds)
 
@@ -52,7 +54,7 @@ export async function generateExam({
       subjectId,
       title,
       difficulty,
-      totalQuestions: questionCount,
+      totalQuestions,
       status: 'draft',
     },
   })
@@ -69,9 +71,10 @@ export async function generateExam({
 ${context}
 
 **ข้อกำหนด:**
-- จำนวนข้อ: ${questionCount} ข้อ
+- จำนวนข้อปรนัย (multiple choice): ${multipleChoiceCount} ข้อ
+- จำนวนข้อจริง/เท็จ (true/false): ${trueFalseCount} ข้อ
+- รวมทั้งหมด: ${totalQuestions} ข้อ
 - ระดับความยาก: ${difficulty}
-- ประเภทคำถาม: ${questionTypes.join(', ')}
 ${topics && topics.length > 0 ? `- หัวข้อที่ต้องครอบคลุม: ${topics.join(', ')}` : ''}
 
 **รูปแบบ JSON ที่ต้องการ:**
@@ -87,6 +90,10 @@ ${topics && topics.length > 0 ? `- หัวข้อที่ต้องคร
     }
   ]
 }
+
+**หมายเหตุ:**
+- สำหรับข้อปรนัย (multiple_choice): ให้มี 4 ตัวเลือก
+- สำหรับข้อจริง/เท็จ (true_false): ให้มี 2 ตัวเลือก ["จริง", "เท็จ"]
 
 กรุณาสร้างข้อสอบในรูปแบบ JSON เท่านั้น ไม่ต้องมีข้อความอื่น`
 

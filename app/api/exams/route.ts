@@ -14,12 +14,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { subjectId, title, questionCount, difficulty, topics, questionTypes, noteIds } = body
+    const { subjectId, title, multipleChoiceCount, trueFalseCount, difficulty, topics, noteIds } = body
 
     // Validate inputs
-    if (!subjectId || !title || !questionCount || !difficulty) {
+    if (!subjectId || !title || multipleChoiceCount === undefined || trueFalseCount === undefined || !difficulty) {
       return NextResponse.json(
-        { error: 'Missing required fields: subjectId, title, questionCount, difficulty' },
+        { error: 'Missing required fields: subjectId, title, multipleChoiceCount, trueFalseCount, difficulty' },
         { status: 400 }
       )
     }
@@ -31,9 +31,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (questionCount < 1 || questionCount > 50) {
+    const totalQuestions = multipleChoiceCount + trueFalseCount
+
+    if (totalQuestions < 1 || totalQuestions > 30) {
       return NextResponse.json(
-        { error: 'Question count must be between 1 and 50' },
+        { error: 'Total question count must be between 1 and 30' },
+        { status: 400 }
+      )
+    }
+
+    if (multipleChoiceCount < 0 || trueFalseCount < 0) {
+      return NextResponse.json(
+        { error: 'Question counts cannot be negative' },
         { status: 400 }
       )
     }
@@ -43,10 +52,10 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       subjectId,
       title,
-      questionCount,
+      multipleChoiceCount,
+      trueFalseCount,
       difficulty,
       topics,
-      questionTypes,
       noteIds,
     })
 

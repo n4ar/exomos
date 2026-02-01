@@ -165,13 +165,13 @@ export function ExamTakingClient({ exam }: ExamTakingClientProps) {
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Failed to submit exam')
+        throw new Error(error.error || 'ส่งข้อสอบล้มเหลว')
       }
 
       // Clear saved answers from localStorage
       localStorage.removeItem(`exam-${exam.id}-answers`)
 
-      toast.success('Exam submitted successfully!')
+      toast.success('ส่งข้อสอบสำเร็จ!')
       router.push(`/exams/${exam.id}/results`)
     } catch (error: any) {
       toast.error(error.message)
@@ -183,8 +183,8 @@ export function ExamTakingClient({ exam }: ExamTakingClientProps) {
   if (isSubmitting) {
     return (
       <LoadingOverlay
-        message="Submitting your exam..."
-        submessage="Calculating your score..."
+        message="กำลังส่งข้อสอบของคุณ..."
+        submessage="กำลังคำนวณคะแนน..."
       />
     )
   }
@@ -216,8 +216,8 @@ export function ExamTakingClient({ exam }: ExamTakingClientProps) {
                 />
                 {exam.difficulty.charAt(0).toUpperCase() + exam.difficulty.slice(1)}
               </span>
-              <span>{totalQuestions} Questions</span>
-              <span>{answeredCount} Answered</span>
+              <span>{totalQuestions} ข้อ</span>
+              <span>ตอบแล้ว {answeredCount} ข้อ</span>
             </div>
           </div>
 
@@ -225,14 +225,14 @@ export function ExamTakingClient({ exam }: ExamTakingClientProps) {
             <div className="text-3xl font-bold font-mono tabular-nums">
               {formatTime(timeElapsed)}
             </div>
-            <div className="text-xs text-muted-foreground">Time Elapsed</div>
+            <div className="text-xs text-muted-foreground">เวลาที่ใช้</div>
           </div>
         </div>
 
         {/* Progress Bar */}
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2 text-sm">
-            <span className="text-muted-foreground">Progress</span>
+            <span className="text-muted-foreground">ความคืบหน้า</span>
             <span className="font-semibold">
               {answeredCount}/{totalQuestions}
             </span>
@@ -247,7 +247,7 @@ export function ExamTakingClient({ exam }: ExamTakingClientProps) {
         <div className="flex items-center justify-between mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
             <span className="text-sm font-medium text-primary">
-              Question {currentQuestionIndex + 1} of {totalQuestions}
+              ข้อที่ {currentQuestionIndex + 1} จาก {totalQuestions}
             </span>
           </div>
           {answers[currentQuestion.id] && (
@@ -259,7 +259,7 @@ export function ExamTakingClient({ exam }: ExamTakingClientProps) {
                   clipRule="evenodd"
                 />
               </svg>
-              Answered
+              ตอบแล้ว
             </div>
           )}
         </div>
@@ -322,7 +322,7 @@ export function ExamTakingClient({ exam }: ExamTakingClientProps) {
                 d="M15 19l-7-7 7-7"
               />
             </svg>
-            Previous
+            ก่อนหน้า
           </span>
         </button>
 
@@ -353,7 +353,7 @@ export function ExamTakingClient({ exam }: ExamTakingClientProps) {
             className="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-white font-medium hover:scale-105 hover:shadow-lg hover:shadow-primary/20 transition-all"
           >
             <span className="flex items-center gap-2">
-              Submit Exam
+              ส่งข้อสอบ
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -370,7 +370,7 @@ export function ExamTakingClient({ exam }: ExamTakingClientProps) {
             className="px-6 py-3 rounded-xl bg-primary text-white font-medium hover:scale-105 transition-all"
           >
             <span className="flex items-center gap-2">
-              Next
+              ถัดไป
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
@@ -413,11 +413,11 @@ export function ExamTakingClient({ exam }: ExamTakingClientProps) {
                   </svg>
                 </div>
 
-                <h3 className="text-2xl font-bold text-center mb-2">Submit Exam?</h3>
+                <h3 className="text-2xl font-bold text-center mb-2">ส่งข้อสอบหรือไม่?</h3>
                 <p className="text-muted-foreground text-center mb-6">
-                  You have answered {answeredCount} out of {totalQuestions} questions.
+                  คุณตอบคำถามแล้ว {answeredCount} จาก {totalQuestions} ข้อ
                   <br />
-                  Once submitted, you cannot change your answers.
+                  เมื่อส่งแล้ว คุณจะไม่สามารถเปลี่ยนคำตอบได้
                 </p>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -425,13 +425,13 @@ export function ExamTakingClient({ exam }: ExamTakingClientProps) {
                     onClick={() => setIsSubmitModalOpen(false)}
                     className="px-4 py-3 rounded-xl border border-border hover:bg-muted transition-colors font-medium"
                   >
-                    Review Again
+                    ตรวจสอบอีกครั้ง
                   </button>
                   <button
                     onClick={confirmSubmit}
                     className="px-4 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-white font-medium hover:scale-105 hover:shadow-lg hover:shadow-primary/20 transition-all"
                   >
-                    Submit Now
+                    ส่งเลย
                   </button>
                 </div>
               </div>

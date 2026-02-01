@@ -52,19 +52,19 @@ export default async function ExamGenerationPage() {
                 href="/dashboard"
                 className="px-4 py-2 text-sm rounded-lg hover:bg-muted transition-colors"
               >
-                Dashboard
+                หน้าหลัก
               </Link>
               <Link
                 href="/subjects"
                 className="px-4 py-2 text-sm rounded-lg hover:bg-muted transition-colors"
               >
-                Subjects
+                วิชา
               </Link>
               <Link
                 href="/notes"
                 className="px-4 py-2 text-sm rounded-lg hover:bg-muted transition-colors"
               >
-                Notes
+                โน้ต
               </Link>
             </nav>
 
@@ -95,20 +95,20 @@ export default async function ExamGenerationPage() {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          Back to Dashboard
+          กลับไปหน้าหลัก
         </Link>
 
         {/* Page Header */}
         <div className="mb-8 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 border border-secondary/20 mb-4">
             <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-            <span className="text-xs font-medium text-secondary">Exam Generation</span>
+            <span className="text-xs font-medium text-secondary">สร้างข้อสอบ</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-2">
-            Create Your <span className="gradient-text">AI Exam</span>
+            สร้าง<span className="gradient-text">ข้อสอบด้วย AI</span>
           </h1>
           <p className="text-lg text-muted-foreground">
-            Generate personalized exam questions from your study notes
+            สร้างข้อสอบเฉพาะบุคคลจากโน้ตการเรียนของคุณ
           </p>
         </div>
 
