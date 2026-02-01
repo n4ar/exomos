@@ -1,6 +1,26 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
+/**
+ * Generate a presigned URL for uploading files directly to R2
+ * This bypasses Vercel's 4.5MB payload limit
+ */
+export async function getPresignedUploadUrl(
+  key: string,
+  contentType: string,
+  expiresIn: number = 3600
+): Promise<{ uploadUrl: string; key: string }> {
+  const command = new PutObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: key,
+    ContentType: contentType,
+  })
+
+  const uploadUrl = await getSignedUrl(r2Client, command, { expiresIn })
+
+  return { uploadUrl, key }
+}
+
 // Initialize R2 client (S3-compatible)
 const r2Client = new S3Client({
   region: 'auto',

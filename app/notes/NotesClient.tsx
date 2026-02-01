@@ -304,28 +304,63 @@ function UploadNoteModal({ subjects, onClose, onUploadComplete }: UploadNoteModa
     }
 
     setIsUploading(true)
-    setUploadProgress('กำลังอัปโหลด PDF...')
+    setUploadProgress('กำลังเตรียมอัปโหลด...')
 
     try {
-      const formData = new FormData()
-      formData.append('file', selectedFile)
-      formData.append('title', title.trim())
-      formData.append('subjectId', subjectId)
-      if (description.trim()) {
-        formData.append('description', description.trim())
-      }
-
-      const response = await fetch('/api/notes', {
+      // Step 1: Get presigned URL from server
+      setUploadProgress('กำลังเตรียมอัปโหลด...')
+      const presignedRes = await fetch('/api/notes/presigned-url', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: selectedFile.name,
+          contentType: selectedFile.type,
+          subjectId,
+        }),
       })
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'อัปโหลดโน้ตล้มเหลว')
+      if (!presignedRes.ok) {
+        const error = await presignedRes.json()
+        throw new Error(error.error || 'ไม่สามารถเตรียมอัปโหลดได้')
       }
 
-      const newNote = await response.json()
+      const { uploadUrl, key, fileUrl } = await presignedRes.json()
+
+      // Step 2: Upload file directly to R2
+      setUploadProgress('กำลังอัปโหลด PDF...')
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': selectedFile.type },
+        body: selectedFile,
+      })
+
+      if (!uploadRes.ok) {
+        throw new Error('อัปโหลดไฟล์ล้มเหลว')
+      }
+
+      // Step 3: Process the uploaded file
+      setUploadProgress('กำลังประมวลผลโน้ต...')
+      const processRes = await fetch('/api/notes/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subjectId,
+          title: title.trim(),
+          description: description.trim() || undefined,
+          fileKey: key,
+          fileName: selectedFile.name,
+          fileSize: selectedFile.size,
+          fileType: selectedFile.type,
+          fileUrl,
+        }),
+      })
+
+      if (!processRes.ok) {
+        const error = await processRes.json()
+        throw new Error(error.error || 'ประมวลผลโน้ตล้มเหลว')
+      }
+
+      const newNote = await processRes.json()
       toast.success('อัปโหลดโน้ตสำเร็จ!')
       onUploadComplete(newNote)
     } catch (error: any) {
