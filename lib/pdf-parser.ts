@@ -1,4 +1,5 @@
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
+// @ts-ignore - pdf-parse-fork doesn't have types
+import pdfParse from 'pdf-parse-fork'
 import { extractTextWithOCR } from './typhoon-ocr'
 
 export interface ParsedPDF {
@@ -12,51 +13,38 @@ export interface ParsedPDF {
 }
 
 /**
- * Parse PDF from buffer and extract text using pdfjs-dist
+ * Parse PDF from buffer and extract text
  * Falls back to OCR if text extraction yields insufficient content
  */
 export async function parsePDF(buffer: Buffer): Promise<ParsedPDF> {
   try {
-    // Load PDF document
-    const loadingTask = pdfjsLib.getDocument({
-      data: new Uint8Array(buffer),
-      useSystemFonts: true,
-      standardFontDataUrl: undefined,
-    })
-
-    const pdfDocument = await loadingTask.promise
-    const numPages = pdfDocument.numPages
-
-    const pages: Array<{ pageNumber: number; text: string }> = []
-    let fullText = ''
-
-    // Extract text from each page
-    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-      const page = await pdfDocument.getPage(pageNum)
-      const textContent = await page.getTextContent()
-
-      // Combine text items
-      const pageText = textContent.items
-        .map((item: any) => item.str)
-        .join(' ')
-
-      pages.push({
-        pageNumber: pageNum,
-        text: pageText,
-      })
-
-      fullText += pageText + '\n'
-    }
+    // Parse PDF with pdf-parse-fork
+    const data = await pdfParse(buffer)
 
     // Check if extracted text is sufficient
-    const textContent = fullText.trim()
+    const textContent = data.text.trim()
     const isTextSufficient = textContent.length > 100 // Threshold: at least 100 chars
 
     if (isTextSufficient) {
+      // Regular text-based PDF
+      // Split by form feed character or estimate pages
+      const pageTexts = data.text.split('\f').filter((t: string) => t.trim())
+
+      // If no form feeds, create single page
+      const pages = pageTexts.length > 0
+        ? pageTexts.map((text: string, index: number) => ({
+            pageNumber: index + 1,
+            text: text,
+          }))
+        : [{
+            pageNumber: 1,
+            text: data.text,
+          }]
+
       return {
-        text: fullText,
+        text: data.text,
         pages,
-        totalPages: numPages,
+        totalPages: data.numpages,
         usedOCR: false,
       }
     }

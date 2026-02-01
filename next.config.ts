@@ -9,8 +9,6 @@ const nextConfig: NextConfig = {
     // Proxy body size limit for API routes (renamed from middlewareClientMaxBodySize)
     proxyClientMaxBodySize: 100 * 1024 * 1024, // 100MB in bytes
   },
-  // External packages for server
-  serverExternalPackages: ['pdfjs-dist'],
 };
 
 export default nextConfig;

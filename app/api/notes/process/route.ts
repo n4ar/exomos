@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma'
 import { parsePDF, chunkTextByPages, cleanText } from '@/lib/pdf-parser'
 import { generateEmbeddings } from '@/lib/embeddings'
 
-// Configure route segment
+// Configure route segment - Force Node.js runtime
 export const runtime = 'nodejs'
 export const maxDuration = 300 // 5 minutes timeout for processing
 
