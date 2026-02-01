@@ -1,4 +1,4 @@
-import { PDFParse } from 'pdf-parse'
+import pdf from 'pdf-parse/lib/pdf-parse.js'
 import { extractTextWithOCR } from './typhoon-ocr'
 
 export interface ParsedPDF {
@@ -16,24 +16,28 @@ export interface ParsedPDF {
  * Falls back to OCR if text extraction yields insufficient content
  */
 export async function parsePDF(buffer: Buffer): Promise<ParsedPDF> {
-  const parser = new PDFParse({ data: buffer })
-
   try {
-    const result = await parser.getText()
+    const data = await pdf(buffer, {
+      // Use legacy build for better compatibility with serverless
+      max: 0, // Parse all pages
+    })
 
     // Check if extracted text is sufficient
-    const textContent = result.text.trim()
+    const textContent = data.text.trim()
     const isTextSufficient = textContent.length > 100 // Threshold: at least 100 chars
 
     if (isTextSufficient) {
       // Regular text-based PDF
+      // pdf-parse doesn't provide per-page text, so we split by form feed or estimate
+      const pageTexts = data.text.split('\f').filter(t => t.trim())
+
       return {
-        text: result.text,
-        pages: result.pages.map((page, index) => ({
+        text: data.text,
+        pages: pageTexts.map((text, index) => ({
           pageNumber: index + 1,
-          text: page.text,
+          text: text,
         })),
-        totalPages: result.total,
+        totalPages: data.numpages,
         usedOCR: false,
       }
     }
@@ -56,8 +60,9 @@ export async function parsePDF(buffer: Buffer): Promise<ParsedPDF> {
       totalPages: ocrResult.pages.length,
       usedOCR: true,
     }
-  } finally {
-    await parser.destroy()
+  } catch (error) {
+    console.error('Error parsing PDF:', error)
+    throw new Error('ไม่สามารถประมวลผล PDF ได้')
   }
 }
 

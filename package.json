@@ -24,6 +24,7 @@
     "@google/generative-ai": "^0.24.1",
     "@hugeicons/core-free-icons": "^3.1.1",
     "@hugeicons/react": "^1.1.4",
+    "@napi-rs/canvas": "^0.1.89",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "@supabase/ssr": "^0.8.0",

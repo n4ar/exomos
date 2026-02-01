@@ -1,6 +1,18 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 
+// Initialize R2 client (S3-compatible)
+const r2Client = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+  },
+})
+
+const BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET_NAME!
+
 /**
  * Generate a presigned URL for uploading files directly to R2
  * This bypasses Vercel's 4.5MB payload limit
@@ -21,18 +33,6 @@ export async function getPresignedUploadUrl(
   return { uploadUrl, key }
 }
 
-// Initialize R2 client (S3-compatible)
-const r2Client = new S3Client({
-  region: 'auto',
-  endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
-  },
-})
-
-const BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET_NAME!
-
 export interface UploadFileParams {
   key: string
   body: Buffer
@@ -46,11 +46,11 @@ export interface UploadFileParams {
 export async function uploadFile({ key, body, contentType, metadata }: UploadFileParams) {
   // Sanitize metadata to remove invalid characters for S3 headers
   const sanitizedMetadata = metadata
-    ? Object.entries(metadata).reduce((acc, [key, value]) => {
+    ? Object.entries(metadata).reduce((acc, [k, value]) => {
         // Only include ASCII characters in metadata
         const sanitizedValue = value.replace(/[^\x00-\x7F]/g, '') // Remove non-ASCII
         if (sanitizedValue) {
-          acc[key] = sanitizedValue
+          acc[k] = sanitizedValue
         }
         return acc
       }, {} as Record<string, string>)
