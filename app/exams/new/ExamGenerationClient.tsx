@@ -18,6 +18,17 @@ interface Subject {
   }
 }
 
+interface Note {
+  id: string
+  title: string
+  fileName: string
+  pageCount: number
+  uploadedAt: string
+  _count: {
+    chunks: number
+  }
+}
+
 interface ExamGenerationClientProps {
   subjects: Subject[]
 }
@@ -31,7 +42,6 @@ const DIFFICULTY_OPTIONS = [
 const QUESTION_TYPES = [
   { value: 'multiple_choice', label: 'ปรนัย', emoji: '☑️' },
   { value: 'true_false', label: 'จริง/เท็จ', emoji: '✓✗' },
-  { value: 'short_answer', label: 'อัตนัย', emoji: '✍️' },
 ] as const
 
 export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
@@ -42,6 +52,9 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
 
   // Form state
   const [selectedSubject, setSelectedSubject] = useState<string>('')
+  const [selectedNoteIds, setSelectedNoteIds] = useState<string[]>([])
+  const [notes, setNotes] = useState<Note[]>([])
+  const [loadingNotes, setLoadingNotes] = useState(false)
   const [title, setTitle] = useState('')
   const [questionCount, setQuestionCount] = useState(10)
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium')
@@ -51,9 +64,28 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
     'true_false',
   ])
 
-  const steps = ['เลือกวิชา', 'ตั้งค่าข้อสอบ', 'สร้างข้อสอบ']
+  const steps = ['เลือกวิชา', 'เลือกโน้ต', 'ตั้งค่าข้อสอบ', 'สร้างข้อสอบ']
 
   const selectedSubjectData = subjects.find((s) => s.id === selectedSubject)
+
+  // Fetch notes when subject is selected
+  useEffect(() => {
+    if (selectedSubject) {
+      setLoadingNotes(true)
+      setSelectedNoteIds([]) // Reset selection when subject changes
+      fetch(`/api/notes?subjectId=${selectedSubject}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setNotes(data.data || [])
+          setLoadingNotes(false)
+        })
+        .catch((error) => {
+          console.error('Error fetching notes:', error)
+          toast.error('ดึงโน้ตล้มเหลว')
+          setLoadingNotes(false)
+        })
+    }
+  }, [selectedSubject])
 
   const toggleQuestionType = (type: string) => {
     if (selectedQuestionTypes.includes(type)) {
@@ -61,6 +93,22 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
     } else {
       setSelectedQuestionTypes([...selectedQuestionTypes, type])
     }
+  }
+
+  const toggleNoteSelection = (noteId: string) => {
+    if (selectedNoteIds.includes(noteId)) {
+      setSelectedNoteIds(selectedNoteIds.filter((id) => id !== noteId))
+    } else {
+      setSelectedNoteIds([...selectedNoteIds, noteId])
+    }
+  }
+
+  const selectAllNotes = () => {
+    setSelectedNoteIds(notes.map((n) => n.id))
+  }
+
+  const deselectAllNotes = () => {
+    setSelectedNoteIds([])
   }
 
   const handleNext = () => {
@@ -72,11 +120,15 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
       toast.error('วิชานี้ยังไม่มีโน้ต กรุณาอัปโหลดโน้ตก่อน')
       return
     }
-    if (currentStep === 1 && !title.trim()) {
+    if (currentStep === 1 && selectedNoteIds.length === 0) {
+      toast.error('กรุณาเลือกโน้ตอย่างน้อย 1 รายการ')
+      return
+    }
+    if (currentStep === 2 && !title.trim()) {
       toast.error('กรุณาใส่ชื่อข้อสอบ')
       return
     }
-    if (currentStep === 1 && selectedQuestionTypes.length === 0) {
+    if (currentStep === 2 && selectedQuestionTypes.length === 0) {
       toast.error('กรุณาเลือกประเภทคำถามอย่างน้อย 1 ประเภท')
       return
     }
@@ -108,6 +160,7 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           subjectId: selectedSubject,
+          noteIds: selectedNoteIds.length > 0 ? selectedNoteIds : undefined,
           title: title.trim(),
           questionCount,
           difficulty,
@@ -155,24 +208,24 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
       {currentStep === 0 && (
         <div className="animate-fade-in-up" style={{ animationDelay: '0.1s', opacity: 0 } as any}>
           <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">Select a Subject</h2>
+            <h2 className="text-2xl font-bold mb-2">เลือกวิชา</h2>
             <p className="text-muted-foreground">
-              Choose the subject you want to create an exam for
+              เลือกวิชาที่คุณต้องการสร้างข้อสอบ
             </p>
           </div>
 
           {subjects.length === 0 ? (
             <BentoCard className="text-center py-12">
               <div className="text-4xl mb-4">📚</div>
-              <h3 className="text-xl font-semibold mb-2">No subjects found</h3>
+              <h3 className="text-xl font-semibold mb-2">ไม่พบวิชา</h3>
               <p className="text-muted-foreground mb-4">
-                Create a subject and upload notes first
+                กรุณาสร้างวิชาและอัปโหลดโน้ตก่อน
               </p>
               <a
                 href="/subjects"
                 className="inline-block px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-white font-medium hover:scale-105 transition-all"
               >
-                Go to Subjects
+                ไปที่หน้าวิชา
               </a>
             </BentoCard>
           ) : (
@@ -234,12 +287,12 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
                           clipRule="evenodd"
                         />
                       </svg>
-                      {subject._count.notes} notes
+                      {subject._count.notes} โน้ต
                     </span>
                   </div>
                   {subject._count.notes === 0 && (
                     <div className="mt-3 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 rounded-lg">
-                      ⚠️ No notes available. Upload notes first.
+                      ⚠️ ยังไม่มีโน้ต กรุณาอัปโหลดโน้ตก่อน
                     </div>
                   )}
                 </BentoCard>
@@ -249,13 +302,140 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
         </div>
       )}
 
-      {/* Step 1: Configure Exam */}
+      {/* Step 1: Select Notes */}
       {currentStep === 1 && (
         <div className="animate-fade-in-up" style={{ animationDelay: '0.1s', opacity: 0 } as any}>
           <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">Configure Your Exam</h2>
+            <h2 className="text-2xl font-bold mb-2">เลือกโน้ต</h2>
             <p className="text-muted-foreground">
-              Set up the exam details and preferences
+              เลือกโน้ตที่ต้องการใช้ในการสร้างข้อสอบ
+            </p>
+          </div>
+
+          {loadingNotes ? (
+            <BentoCard className="text-center py-12">
+              <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-muted-foreground">กำลังโหลดโน้ต...</p>
+            </BentoCard>
+          ) : notes.length === 0 ? (
+            <BentoCard className="text-center py-12">
+              <div className="text-5xl mb-4">📚</div>
+              <h3 className="text-xl font-semibold mb-2">ไม่มีโน้ต</h3>
+              <p className="text-muted-foreground">
+                กรุณาอัปโหลดโน้ตสำหรับวิชานี้ก่อน
+              </p>
+            </BentoCard>
+          ) : (
+            <>
+              {/* Selection Controls */}
+              <BentoCard className="flex items-center justify-between mb-6">
+                <div>
+                  <span className="font-semibold text-primary text-lg">{selectedNoteIds.length}</span>
+                  <span className="text-muted-foreground"> จาก {notes.length} รายการ</span>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={selectAllNotes}
+                    className="px-4 py-2 rounded-lg border-2 border-primary text-primary font-medium hover:bg-primary hover:text-white transition-all"
+                  >
+                    เลือกทั้งหมด
+                  </button>
+                  <button
+                    onClick={deselectAllNotes}
+                    className="px-4 py-2 rounded-lg border-2 border-border text-muted-foreground font-medium hover:bg-muted transition-all"
+                  >
+                    ล้าง
+                  </button>
+                </div>
+              </BentoCard>
+
+              {/* Note Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {notes.map((note) => {
+                  const isSelected = selectedNoteIds.includes(note.id)
+                  return (
+                    <BentoCard
+                      key={note.id}
+                      hover
+                      onClick={() => toggleNoteSelection(note.id)}
+                      className={`cursor-pointer transition-all duration-300 animate-scale-in ${
+                        isSelected
+                          ? 'ring-2 ring-primary shadow-lg shadow-primary/20'
+                          : ''
+                      }`}
+                    >
+                      {/* Checkbox & Badge */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                            isSelected
+                              ? 'border-primary bg-primary'
+                              : 'border-muted-foreground'
+                          }`}
+                        >
+                          {isSelected && (
+                            <svg
+                              className="w-3 h-3 text-white"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
+                        </div>
+                        <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary font-medium">
+                          {note.pageCount} หน้า
+                        </span>
+                      </div>
+
+                      {/* Note Info */}
+                      <div className="mb-4">
+                        <h3 className="font-semibold mb-2 line-clamp-2">
+                          {note.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-1 truncate">
+                          {note.fileName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(note.uploadedAt).toLocaleDateString('th-TH', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </p>
+                      </div>
+
+                      {/* Metadata */}
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground pt-3 border-t border-border">
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                        </svg>
+                        {note._count.chunks} ส่วนข้อมูล
+                      </div>
+                    </BentoCard>
+                  )
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Step 2: Configure Exam */}
+      {currentStep === 2 && (
+        <div className="animate-fade-in-up" style={{ animationDelay: '0.1s', opacity: 0 } as any}>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-2">ตั้งค่าข้อสอบ</h2>
+            <p className="text-muted-foreground">
+              กำหนดรายละเอียดและความต้องการของข้อสอบ
             </p>
           </div>
 
@@ -265,13 +445,13 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
               {/* Exam Title */}
               <BentoCard>
                 <label className="block text-sm font-medium mb-2">
-                  Exam Title <span className="text-destructive">*</span>
+                  ชื่อข้อสอบ <span className="text-destructive">*</span>
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g., Midterm Exam - Chapter 1-3"
+                  placeholder="เช่น ข้อสอบกลางภาค - บทที่ 1-3"
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                 />
               </BentoCard>
@@ -279,7 +459,7 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
               {/* Question Count */}
               <BentoCard>
                 <label className="block text-sm font-medium mb-2">
-                  Number of Questions
+                  จำนวนข้อ
                 </label>
                 <div className="space-y-3">
                   <input
@@ -291,11 +471,11 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
                     className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
                   />
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">5 questions</span>
+                    <span className="text-sm text-muted-foreground">5 ข้อ</span>
                     <div className="px-4 py-2 rounded-lg bg-primary/10 text-primary font-bold">
                       {questionCount}
                     </div>
-                    <span className="text-sm text-muted-foreground">50 questions</span>
+                    <span className="text-sm text-muted-foreground">50 ข้อ</span>
                   </div>
                 </div>
               </BentoCard>
@@ -303,7 +483,7 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
               {/* Difficulty */}
               <BentoCard>
                 <label className="block text-sm font-medium mb-3">
-                  Difficulty Level
+                  ระดับความยาก
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   {DIFFICULTY_OPTIONS.map((option) => (
@@ -330,7 +510,7 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
               {/* Question Types */}
               <BentoCard>
                 <label className="block text-sm font-medium mb-3">
-                  Question Types
+                  ประเภทคำถาม
                 </label>
                 <div className="space-y-2">
                   {QUESTION_TYPES.map((type) => (
@@ -375,17 +555,17 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
               {/* Topics (Optional) */}
               <BentoCard>
                 <label className="block text-sm font-medium mb-2">
-                  Topics (Optional)
+                  หัวข้อ (ไม่บังคับ)
                 </label>
                 <textarea
                   value={topics}
                   onChange={(e) => setTopics(e.target.value)}
-                  placeholder="e.g., Photosynthesis, Cell Structure (comma separated)"
+                  placeholder="เช่น การสังเคราะห์แสง, โครงสร้างเซลล์ (คั่นด้วยจุลภาค)"
                   rows={3}
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
                 />
                 <p className="text-xs text-muted-foreground mt-2">
-                  Leave empty to include all topics from the notes
+                  เว้นว่างไว้เพื่อรวมทุกหัวข้อจากโน้ต
                 </p>
               </BentoCard>
             </div>
@@ -393,10 +573,10 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
             {/* Right Column - Summary */}
             <div className="space-y-4">
               <BentoCard className="sticky top-24">
-                <h3 className="font-semibold mb-4">Exam Summary</h3>
+                <h3 className="font-semibold mb-4">สรุปข้อสอบ</h3>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Subject</p>
+                    <p className="text-xs text-muted-foreground mb-1">วิชา</p>
                     {selectedSubjectData && (
                       <SubjectBadge
                         name={selectedSubjectData.name}
@@ -406,21 +586,24 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
                     )}
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Title</p>
+                    <p className="text-xs text-muted-foreground mb-1">ชื่อ</p>
                     <p className="font-medium text-sm">
-                      {title || 'Not set'}
+                      {title || 'ยังไม่ได้ตั้ง'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Questions</p>
+                    <p className="text-xs text-muted-foreground mb-1">จำนวนข้อ</p>
                     <p className="font-medium">{questionCount}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Difficulty</p>
-                    <p className="font-medium capitalize">{difficulty}</p>
+                    <p className="text-xs text-muted-foreground mb-1">ระดับความยาก</p>
+                    <p className="font-medium capitalize">{
+                      difficulty === 'easy' ? 'ง่าย' :
+                      difficulty === 'medium' ? 'ปานกลาง' : 'ยาก'
+                    }</p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Question Types</p>
+                    <p className="text-xs text-muted-foreground mb-1">ประเภทคำถาม</p>
                     <div className="flex flex-wrap gap-1">
                       {selectedQuestionTypes.map((type) => {
                         const typeData = QUESTION_TYPES.find((t) => t.value === type)
@@ -442,13 +625,13 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
         </div>
       )}
 
-      {/* Step 2: Review & Generate */}
-      {currentStep === 2 && (
+      {/* Step 3: Review & Generate */}
+      {currentStep === 3 && (
         <div className="animate-fade-in-up" style={{ animationDelay: '0.1s', opacity: 0 } as any}>
           <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2">Ready to Generate</h2>
+            <h2 className="text-2xl font-bold mb-2">พร้อมสร้างข้อสอบ</h2>
             <p className="text-muted-foreground">
-              Review your settings and generate the exam
+              ตรวจสอบการตั้งค่าและสร้างข้อสอบ
             </p>
           </div>
 
@@ -469,27 +652,30 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
                   />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-2">All Set!</h3>
+              <h3 className="text-2xl font-bold mb-2">พร้อมแล้ว!</h3>
               <p className="text-muted-foreground mb-8">
-                Click below to generate your exam with AI
+                คลิกด้านล่างเพื่อสร้างข้อสอบด้วย AI
               </p>
 
               <div className="bg-muted/30 rounded-xl p-6 mb-8 text-left space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subject:</span>
+                  <span className="text-muted-foreground">วิชา:</span>
                   <span className="font-medium">{selectedSubjectData?.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Title:</span>
+                  <span className="text-muted-foreground">ชื่อ:</span>
                   <span className="font-medium">{title}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Questions:</span>
+                  <span className="text-muted-foreground">จำนวนข้อ:</span>
                   <span className="font-medium">{questionCount}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Difficulty:</span>
-                  <span className="font-medium capitalize">{difficulty}</span>
+                  <span className="text-muted-foreground">ระดับความยาก:</span>
+                  <span className="font-medium capitalize">{
+                    difficulty === 'easy' ? 'ง่าย' :
+                    difficulty === 'medium' ? 'ปานกลาง' : 'ยาก'
+                  }</span>
                 </div>
               </div>
 
@@ -497,7 +683,7 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
                 onClick={handleGenerate}
                 className="px-8 py-4 rounded-xl bg-gradient-to-r from-primary via-accent to-secondary text-white font-semibold hover:scale-105 hover:shadow-xl hover:shadow-primary/30 transition-all text-lg"
               >
-                🤖 Generate Exam with AI
+                🤖 สร้างข้อสอบด้วย AI
               </button>
             </div>
           </BentoCard>
@@ -511,14 +697,14 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
           disabled={currentStep === 0}
           className="px-6 py-3 rounded-xl border border-border hover:bg-muted transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          ← Back
+          ← ก่อนหน้า
         </button>
-        {currentStep < 2 && (
+        {currentStep < 3 && (
           <button
             onClick={handleNext}
             className="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-white font-medium hover:scale-105 hover:shadow-lg hover:shadow-primary/20 transition-all"
           >
-            Next →
+            ถัดไป →
           </button>
         )}
       </div>

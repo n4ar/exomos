@@ -294,9 +294,9 @@ export default async function SubjectDetailPage({ params }: SubjectDetailPagePro
         {/* Notes Section */}
         <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '0.6s', opacity: 0 } as any}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">Notes</h2>
+            <h2 className="text-2xl font-bold">โน้ต</h2>
             <Link href="/notes" className="text-sm text-primary hover:underline font-medium">
-              View All →
+              ดูทั้งหมด →
             </Link>
           </div>
 
@@ -320,15 +320,15 @@ export default async function SubjectDetailPage({ params }: SubjectDetailPagePro
                   />
                   <div className="my-4 space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Pages</span>
+                      <span className="text-muted-foreground">หน้า</span>
                       <span className="font-semibold">{note.pageCount || 'N/A'}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Chunks</span>
+                      <span className="text-muted-foreground">ส่วนข้อมูล</span>
                       <span className="font-semibold">{note._count.chunks}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Uploaded</span>
+                      <span className="text-muted-foreground">อัปโหลดเมื่อ</span>
                       <span className="font-semibold">
                         {new Date(note.uploadedAt).toLocaleDateString('th-TH')}
                       </span>
@@ -341,7 +341,7 @@ export default async function SubjectDetailPage({ params }: SubjectDetailPagePro
                       rel="noopener noreferrer"
                       className="text-sm text-primary hover:underline font-medium"
                     >
-                      View PDF →
+                      ดู PDF →
                     </a>
                   </BentoCardFooter>
                 </BentoCard>
@@ -353,7 +353,7 @@ export default async function SubjectDetailPage({ params }: SubjectDetailPagePro
         {/* Exams Section */}
         <div className="animate-fade-in-up" style={{ animationDelay: '0.7s', opacity: 0 } as any}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">Exams</h2>
+            <h2 className="text-2xl font-bold">ข้อสอบ</h2>
           </div>
 
           {subject.exams.length === 0 ? (
@@ -379,10 +379,10 @@ export default async function SubjectDetailPage({ params }: SubjectDetailPagePro
                           <h3 className="font-semibold mb-1 truncate">{exam.title}</h3>
                           <div className="space-y-1">
                             <p className="text-sm text-muted-foreground">
-                              {exam._count.questions} questions
+                              {exam._count.questions} คำถาม
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {exam.difficulty} • {exam.completedAt ? 'Completed' : 'In Progress'}
+                              {exam.difficulty === 'easy' ? 'ง่าย' : exam.difficulty === 'medium' ? 'ปานกลาง' : 'ยาก'} • {exam.completedAt ? 'เสร็จสิ้น' : 'กำลังทำ'}
                             </p>
                           </div>
                         </div>

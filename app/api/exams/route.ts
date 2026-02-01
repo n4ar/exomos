@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { subjectId, title, questionCount, difficulty, topics, questionTypes } = body
+    const { subjectId, title, questionCount, difficulty, topics, questionTypes, noteIds } = body
 
     // Validate inputs
     if (!subjectId || !title || !questionCount || !difficulty) {
@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
       difficulty,
       topics,
       questionTypes,
+      noteIds,
     })
 
     return NextResponse.json(result)

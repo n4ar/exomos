@@ -12,12 +12,13 @@ export interface GenerateExamParams {
   questionCount: number
   difficulty: 'easy' | 'medium' | 'hard'
   topics?: string[]
-  questionTypes?: ('multiple_choice' | 'true_false' | 'short_answer')[]
+  questionTypes?: ('multiple_choice' | 'true_false')[]
+  noteIds?: string[]
 }
 
 export interface GeneratedQuestion {
   question: string
-  type: 'multiple_choice' | 'true_false' | 'short_answer'
+  type: 'multiple_choice' | 'true_false'
   options?: string[]
   correctAnswer: string
   explanation: string
@@ -34,10 +35,11 @@ export async function generateExam({
   questionCount,
   difficulty,
   topics,
-  questionTypes = ['multiple_choice', 'true_false', 'short_answer'],
+  questionTypes = ['multiple_choice', 'true_false'],
+  noteIds,
 }: GenerateExamParams) {
   // 1. Get relevant context from user's notes using RAG
-  const context = await getExamContext(userId, subjectId, topics)
+  const context = await getExamContext(userId, subjectId, topics, noteIds)
 
   if (!context || context.trim().length === 0) {
     throw new Error('ไม่พบเนื้อหาในบันทึกของคุณ กรุณาอัปโหลดบันทึกก่อน')
@@ -77,7 +79,7 @@ ${topics && topics.length > 0 ? `- หัวข้อที่ต้องคร
   "questions": [
     {
       "question": "คำถาม",
-      "type": "multiple_choice | true_false | short_answer",
+      "type": "multiple_choice | true_false",
       "options": ["ตัวเลือก 1", "ตัวเลือก 2", "ตัวเลือก 3", "ตัวเลือก 4"],
       "correctAnswer": "คำตอบที่ถูกต้อง",
       "explanation": "คำอธิบายว่าทำไมคำตอบนี้ถูกต้อง พร้อมอ้างอิงจากเนื้อหา",

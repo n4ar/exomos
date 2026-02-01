@@ -170,11 +170,11 @@ export function SubjectsClient({ initialSubjects }: SubjectsClientProps) {
 
               <div className="my-4 space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Notes</span>
+                  <span className="text-muted-foreground">โน้ต</span>
                   <span className="font-semibold">{subject._count.notes}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Exams</span>
+                  <span className="text-muted-foreground">ข้อสอบ</span>
                   <span className="font-semibold">{subject._count.exams}</span>
                 </div>
               </div>
@@ -184,7 +184,7 @@ export function SubjectsClient({ initialSubjects }: SubjectsClientProps) {
                   href={`/subjects/${subject.id}`}
                   className="text-sm text-primary hover:underline font-medium"
                 >
-                  View Details →
+                  ดูรายละเอียด →
                 </Link>
                 <button
                   onClick={() => handleDeleteSubject(subject.id)}
@@ -234,7 +234,7 @@ function CreateSubjectModal({ onClose, onSubmit, isLoading }: CreateSubjectModal
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) {
-      toast.error('Subject name is required')
+      toast.error('กรุณาใส่ชื่อวิชา')
       return
     }
     onSubmit({
@@ -255,7 +255,7 @@ function CreateSubjectModal({ onClose, onSubmit, isLoading }: CreateSubjectModal
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 className="text-2xl font-bold">Create New Subject</h2>
+          <h2 className="text-2xl font-bold">สร้างวิชาใหม่</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-muted transition-colors"
@@ -277,14 +277,14 @@ function CreateSubjectModal({ onClose, onSubmit, isLoading }: CreateSubjectModal
           {/* Name Input */}
           <div className="space-y-2">
             <label htmlFor="name" className="text-sm font-medium text-foreground">
-              Subject Name <span className="text-destructive">*</span>
+              ชื่อวิชา <span className="text-destructive">*</span>
             </label>
             <input
               id="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Physics, Chemistry, Calculus"
+              placeholder="เช่น ฟิสิกส์, เคมี, แคลคูลัส"
               className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               disabled={isLoading}
               required
@@ -294,13 +294,13 @@ function CreateSubjectModal({ onClose, onSubmit, isLoading }: CreateSubjectModal
           {/* Description Input */}
           <div className="space-y-2">
             <label htmlFor="description" className="text-sm font-medium text-foreground">
-              Description (Optional)
+              คำอธิบาย (ไม่บังคับ)
             </label>
             <textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of the subject..."
+              placeholder="คำอธิบายสั้นๆ เกี่ยวกับวิชานี้..."
               rows={3}
               className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
               disabled={isLoading}
@@ -312,8 +312,8 @@ function CreateSubjectModal({ onClose, onSubmit, isLoading }: CreateSubjectModal
 
           {/* Preview */}
           <div className="p-4 rounded-xl bg-muted/30 border border-border">
-            <p className="text-xs text-muted-foreground mb-2">Preview:</p>
-            <SubjectBadge name={name || 'Subject Name'} color={color} size="md" />
+            <p className="text-xs text-muted-foreground mb-2">ตัวอย่าง:</p>
+            <SubjectBadge name={name || 'ชื่อวิชา'} color={color} size="md" />
           </div>
 
           {/* Actions */}
@@ -324,7 +324,7 @@ function CreateSubjectModal({ onClose, onSubmit, isLoading }: CreateSubjectModal
               className="flex-1 px-4 py-3 rounded-xl border border-border hover:bg-muted transition-colors font-medium"
               disabled={isLoading}
             >
-              Cancel
+              ยกเลิก
             </button>
             <button
               type="submit"
@@ -334,10 +334,10 @@ function CreateSubjectModal({ onClose, onSubmit, isLoading }: CreateSubjectModal
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
                   <LoadingSpinner size="sm" variant="dots" />
-                  Creating...
+                  กำลังสร้าง...
                 </span>
               ) : (
-                'Create Subject'
+                'สร้างวิชา'
               )}
             </button>
           </div>

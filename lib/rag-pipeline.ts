@@ -112,6 +112,7 @@ export interface SearchChunksParams {
   subjectId?: string
   userId: string
   limit?: number
+  noteIds?: string[]
 }
 
 export interface SearchResult {
@@ -134,6 +135,7 @@ export async function searchChunks({
   subjectId,
   userId,
   limit = 5,
+  noteIds,
 }: SearchChunksParams): Promise<SearchResult[]> {
   const { generateEmbedding } = await import('@/lib/embeddings')
 
@@ -144,9 +146,24 @@ export async function searchChunks({
   const embeddingStr = `[${queryEmbedding.join(',')}]`
 
   // Build the query conditionally
-  const subjectFilter = subjectId ? `AND n.subject_id::text = $3` : ''
-  const params = subjectId ? [embeddingStr, userId, subjectId, limit] : [embeddingStr, userId, limit]
-  const limitParam = subjectId ? '$4' : '$3'
+  const filters = []
+  const params: any[] = [embeddingStr, userId]
+  let paramIndex = 3
+
+  if (subjectId) {
+    filters.push(`AND n.subject_id::text = $${paramIndex}`)
+    params.push(subjectId)
+    paramIndex++
+  }
+
+  if (noteIds && noteIds.length > 0) {
+    filters.push(`AND n.id::text = ANY($${paramIndex}::text[])`)
+    params.push(noteIds)
+    paramIndex++
+  }
+
+  params.push(limit)
+  const limitParam = `$${paramIndex}`
 
   // Search using pgvector cosine similarity
   const results = await prisma.$queryRawUnsafe<SearchResult[]>(
@@ -164,7 +181,7 @@ export async function searchChunks({
     INNER JOIN notes n ON nc.note_id = n.id
     INNER JOIN subjects s ON n.subject_id = s.id
     WHERE s.user_id::text = $2
-    ${subjectFilter}
+    ${filters.join(' ')}
     ORDER BY nc.embedding <=> $1::vector
     LIMIT ${limitParam}`,
     ...params
@@ -179,14 +196,15 @@ export async function searchChunks({
 export async function getExamContext(
   userId: string,
   subjectId: string,
-  topics?: string[]
+  topics?: string[],
+  noteIds?: string[]
 ): Promise<string> {
   let query = ''
 
   if (topics && topics.length > 0) {
     query = topics.join(' ')
   } else {
-    // Get all chunks from the subject
+    // Get all chunks from the subject (or specific notes if noteIds provided)
     const chunks = await prisma.noteChunk.findMany({
       where: {
         note: {
@@ -194,6 +212,7 @@ export async function getExamContext(
           subject: {
             userId,
           },
+          ...(noteIds && noteIds.length > 0 ? { id: { in: noteIds } } : {}),
         },
       },
       take: 20,
@@ -205,12 +224,13 @@ export async function getExamContext(
     return chunks.map((c) => c.content).join('\n\n')
   }
 
-  // Search for relevant chunks
+  // Search for relevant chunks (with optional note filtering)
   const results = await searchChunks({
     query,
     userId,
     subjectId,
     limit: 10,
+    noteIds,
   })
 
   return results.map((r) => r.content).join('\n\n')

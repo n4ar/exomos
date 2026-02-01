@@ -139,7 +139,7 @@ export default function ExamClient({ exam }: ExamClientProps) {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to submit exam')
+        throw new Error(data.error || 'ส่งข้อสอบล้มเหลว')
       }
 
       // Clear saved data
