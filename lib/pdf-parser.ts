@@ -1,19 +1,5 @@
-import { PDFParse } from 'pdf-parse'
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { extractTextWithOCR } from './typhoon-ocr'
-
-// Polyfill canvas for pdf-parse on serverless
-if (typeof window === 'undefined') {
-  try {
-    const { Canvas, Image, ImageData, Path2D, DOMMatrix } = require('canvas')
-    ;(global as any).Canvas = Canvas
-    ;(global as any).Image = Image
-    ;(global as any).ImageData = ImageData
-    ;(global as any).Path2D = Path2D
-    ;(global as any).DOMMatrix = DOMMatrix
-  } catch (e) {
-    console.warn('Canvas polyfill not available:', e)
-  }
-}
 
 export interface ParsedPDF {
   text: string
@@ -26,28 +12,51 @@ export interface ParsedPDF {
 }
 
 /**
- * Parse PDF from buffer and extract text
+ * Parse PDF from buffer and extract text using pdfjs-dist
  * Falls back to OCR if text extraction yields insufficient content
  */
 export async function parsePDF(buffer: Buffer): Promise<ParsedPDF> {
-  const parser = new PDFParse({ data: buffer })
-
   try {
-    const result = await parser.getText()
+    // Load PDF document
+    const loadingTask = pdfjsLib.getDocument({
+      data: new Uint8Array(buffer),
+      useSystemFonts: true,
+      standardFontDataUrl: undefined,
+    })
+
+    const pdfDocument = await loadingTask.promise
+    const numPages = pdfDocument.numPages
+
+    const pages: Array<{ pageNumber: number; text: string }> = []
+    let fullText = ''
+
+    // Extract text from each page
+    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+      const page = await pdfDocument.getPage(pageNum)
+      const textContent = await page.getTextContent()
+
+      // Combine text items
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(' ')
+
+      pages.push({
+        pageNumber: pageNum,
+        text: pageText,
+      })
+
+      fullText += pageText + '\n'
+    }
 
     // Check if extracted text is sufficient
-    const textContent = result.text.trim()
+    const textContent = fullText.trim()
     const isTextSufficient = textContent.length > 100 // Threshold: at least 100 chars
 
     if (isTextSufficient) {
-      // Regular text-based PDF
       return {
-        text: result.text,
-        pages: result.pages.map((page, index) => ({
-          pageNumber: index + 1,
-          text: page.text,
-        })),
-        totalPages: result.total,
+        text: fullText,
+        pages,
+        totalPages: numPages,
         usedOCR: false,
       }
     }
@@ -72,9 +81,7 @@ export async function parsePDF(buffer: Buffer): Promise<ParsedPDF> {
     }
   } catch (error) {
     console.error('Error parsing PDF:', error)
-    throw new Error('ไม่สามารถประมวลผล PDF ได้')
-  } finally {
-    await parser.destroy()
+    throw new Error('ไม่สามารถประมวลผล PDF ได้: ' + (error instanceof Error ? error.message : 'Unknown error'))
   }
 }
 
