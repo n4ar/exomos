@@ -1,6 +1,20 @@
 import { PDFParse } from 'pdf-parse'
 import { extractTextWithOCR } from './typhoon-ocr'
 
+// Polyfill canvas for pdf-parse on serverless
+if (typeof window === 'undefined') {
+  try {
+    const { Canvas, Image, ImageData, Path2D, DOMMatrix } = require('canvas')
+    ;(global as any).Canvas = Canvas
+    ;(global as any).Image = Image
+    ;(global as any).ImageData = ImageData
+    ;(global as any).Path2D = Path2D
+    ;(global as any).DOMMatrix = DOMMatrix
+  } catch (e) {
+    console.warn('Canvas polyfill not available:', e)
+  }
+}
+
 export interface ParsedPDF {
   text: string
   pages: Array<{

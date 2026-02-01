@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     proxyClientMaxBodySize: 100 * 1024 * 1024, // 100MB in bytes
   },
   // External packages for server
-  serverExternalPackages: ['pdf-parse'],
+  serverExternalPackages: ['pdf-parse', 'canvas'],
 };
 
 export default nextConfig;
