@@ -320,8 +320,9 @@ function UploadNoteModal({ subjects, onClose, onUploadComplete }: UploadNoteModa
       })
 
       if (!presignedRes.ok) {
-        const error = await presignedRes.json()
-        throw new Error(error.error || 'ไม่สามารถเตรียมอัปโหลดได้')
+        const errorText = await presignedRes.text()
+        console.error('Presigned URL error:', errorText)
+        throw new Error('ไม่สามารถเตรียมอัปโหลดได้')
       }
 
       const { uploadUrl, key, fileUrl } = await presignedRes.json()
@@ -335,6 +336,7 @@ function UploadNoteModal({ subjects, onClose, onUploadComplete }: UploadNoteModa
       })
 
       if (!uploadRes.ok) {
+        console.error('R2 upload error:', uploadRes.status, uploadRes.statusText)
         throw new Error('อัปโหลดไฟล์ล้มเหลว')
       }
 
@@ -356,14 +358,24 @@ function UploadNoteModal({ subjects, onClose, onUploadComplete }: UploadNoteModa
       })
 
       if (!processRes.ok) {
-        const error = await processRes.json()
-        throw new Error(error.error || 'ประมวลผลโน้ตล้มเหลว')
+        const errorText = await processRes.text()
+        console.error('Process error:', errorText)
+        let errorMessage = 'ประมวลผลโน้ตล้มเหลว'
+        try {
+          const errorJson = JSON.parse(errorText)
+          errorMessage = errorJson.error || errorMessage
+        } catch (e) {
+          // If not JSON, use the text as error
+          errorMessage = errorText || errorMessage
+        }
+        throw new Error(errorMessage)
       }
 
       const newNote = await processRes.json()
       toast.success('อัปโหลดโน้ตสำเร็จ!')
       onUploadComplete(newNote)
     } catch (error: any) {
+      console.error('Upload error:', error)
       toast.error(error.message)
       setIsUploading(false)
     }
