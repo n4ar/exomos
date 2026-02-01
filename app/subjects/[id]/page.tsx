@@ -5,8 +5,10 @@ import { BentoCard, BentoCardHeader, BentoCardFooter } from '@/components/BentoC
 import { SubjectBadge } from '@/components/SubjectBadge'
 import { EmptyDataState } from '@/components/EmptyState'
 import { MiniScoreCircle } from '@/components/ScoreCircle'
+import { Logo } from '@/components/Logo'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ViewPdfButton } from './ViewPdfButton'
 
 interface SubjectDetailPageProps {
   params: Promise<{
@@ -88,17 +90,7 @@ export default async function SubjectDetailPage({ params }: SubjectDetailPagePro
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <Link href="/dashboard">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20 cursor-pointer hover:scale-110 transition-transform">
-                  <span className="text-white font-bold text-lg">E</span>
-                </div>
-              </Link>
-              <div>
-                <h1 className="text-xl font-bold">Exomos</h1>
-                <p className="text-xs text-muted-foreground">AI Exam Predictor</p>
-              </div>
-            </div>
+            <Logo href="/dashboard" />
 
             <nav className="hidden md:flex items-center gap-2">
               <Link
@@ -335,14 +327,7 @@ export default async function SubjectDetailPage({ params }: SubjectDetailPagePro
                     </div>
                   </div>
                   <BentoCardFooter>
-                    <a
-                      href={note.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline font-medium"
-                    >
-                      ดู PDF →
-                    </a>
+                    <ViewPdfButton noteId={note.id} />
                   </BentoCardFooter>
                 </BentoCard>
               ))}

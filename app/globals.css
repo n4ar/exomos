@@ -2,8 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -71,28 +69,6 @@
 
   /* Modern Typography */
   --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.dark {
-  /* Dark Modern Theme */
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #171717;
-  --card-foreground: #fafafa;
-  --popover: #171717;
-  --popover-foreground: #fafafa;
-  --primary: #818cf8;
-  --primary-foreground: #0a0a0a;
-  --secondary: #fb7185;
-  --secondary-foreground: #0a0a0a;
-  --muted: #262626;
-  --muted-foreground: #a3a3a3;
-  --accent: #a78bfa;
-  --accent-foreground: #0a0a0a;
-  --destructive: #f87171;
-  --border: #262626;
-  --input: #262626;
-  --ring: #818cf8;
 }
 
 @layer base {
@@ -215,11 +191,6 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.dark .glass {
-  background: rgba(23, 23, 23, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Gradient Text */

@@ -34,14 +34,14 @@ interface ExamGenerationClientProps {
 }
 
 const DIFFICULTY_OPTIONS = [
-  { value: 'easy', label: 'ง่าย', description: 'แนวคิดและคำจำกัดความพื้นฐาน', emoji: '🟢' },
-  { value: 'medium', label: 'ปานกลาง', description: 'การประยุกต์และวิเคราะห์', emoji: '🟡' },
-  { value: 'hard', label: 'ยาก', description: 'การแก้ปัญหาขั้นสูง', emoji: '🔴' },
+  { value: 'easy', label: 'ง่าย', description: 'แนวคิดและคำจำกัดความพื้นฐาน', color: 'text-green-600' },
+  { value: 'medium', label: 'ปานกลาง', description: 'การประยุกต์และวิเคราะห์', color: 'text-yellow-600' },
+  { value: 'hard', label: 'ยาก', description: 'การแก้ปัญหาขั้นสูง', color: 'text-red-600' },
 ] as const
 
 const QUESTION_TYPES = [
-  { value: 'multiple_choice', label: 'ปรนัย', emoji: '☑️' },
-  { value: 'true_false', label: 'จริง/เท็จ', emoji: '✓✗' },
+  { value: 'multiple_choice', label: 'ปรนัย', icon: 'checkbox' },
+  { value: 'true_false', label: 'จริง/เท็จ', icon: 'check' },
 ] as const
 
 export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
@@ -216,7 +216,11 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
 
           {subjects.length === 0 ? (
             <BentoCard className="text-center py-12">
-              <div className="text-4xl mb-4">📚</div>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <svg className="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                </svg>
+              </div>
               <h3 className="text-xl font-semibold mb-2">ไม่พบวิชา</h3>
               <p className="text-muted-foreground mb-4">
                 กรุณาสร้างวิชาและอัปโหลดโน้ตก่อน
@@ -291,8 +295,11 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
                     </span>
                   </div>
                   {subject._count.notes === 0 && (
-                    <div className="mt-3 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 rounded-lg">
-                      ⚠️ ยังไม่มีโน้ต กรุณาอัปโหลดโน้ตก่อน
+                    <div className="mt-3 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-3 py-2 rounded-lg flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      ยังไม่มีโน้ต กรุณาอัปโหลดโน้ตก่อน
                     </div>
                   )}
                 </BentoCard>
@@ -319,7 +326,11 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
             </BentoCard>
           ) : notes.length === 0 ? (
             <BentoCard className="text-center py-12">
-              <div className="text-5xl mb-4">📚</div>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
+                <svg className="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                </svg>
+              </div>
               <h3 className="text-xl font-semibold mb-2">ไม่มีโน้ต</h3>
               <p className="text-muted-foreground">
                 กรุณาอัปโหลดโน้ตสำหรับวิชานี้ก่อน
@@ -497,7 +508,7 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
                           : 'border-border hover:border-primary/30'
                       }`}
                     >
-                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <div className={`w-3 h-3 rounded-full mb-2 mx-auto ${option.color} bg-current`}></div>
                       <div className="font-semibold mb-1">{option.label}</div>
                       <div className="text-xs text-muted-foreground">
                         {option.description}
@@ -545,7 +556,6 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
                           </svg>
                         )}
                       </div>
-                      <span className="text-xl">{type.emoji}</span>
                       <span className="font-medium">{type.label}</span>
                     </button>
                   ))}
@@ -612,7 +622,7 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
                             key={type}
                             className="text-xs px-2 py-1 rounded bg-primary/10 text-primary"
                           >
-                            {typeData?.emoji} {typeData?.label}
+                            {typeData?.label}
                           </span>
                         )
                       })}
@@ -681,9 +691,12 @@ export function ExamGenerationClient({ subjects }: ExamGenerationClientProps) {
 
               <button
                 onClick={handleGenerate}
-                className="px-8 py-4 rounded-xl bg-gradient-to-r from-primary via-accent to-secondary text-white font-semibold hover:scale-105 hover:shadow-xl hover:shadow-primary/30 transition-all text-lg"
+                className="px-8 py-4 rounded-xl bg-gradient-to-r from-primary via-accent to-secondary text-white font-semibold hover:scale-105 hover:shadow-xl hover:shadow-primary/30 transition-all text-lg flex items-center gap-2 mx-auto"
               >
-                🤖 สร้างข้อสอบด้วย AI
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                สร้างข้อสอบด้วย AI
               </button>
             </div>
           </BentoCard>

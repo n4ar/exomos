@@ -101,7 +101,11 @@ interface EmptySearchResultsProps {
 export function EmptySearchResults({ query, onClear }: EmptySearchResultsProps) {
   return (
     <EmptyState
-      icon="🔍"
+      icon={
+        <svg className="w-8 h-8 text-muted-foreground/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      }
       title="ไม่พบผลลัพธ์"
       description={`ไม่พบสิ่งใดที่ตรงกับ "${query}" ลองปรับคำค้นหาหรือตัวกรองของคุณ`}
       action={
@@ -125,21 +129,33 @@ interface EmptyDataStateProps {
 export function EmptyDataState({ type, onCreate }: EmptyDataStateProps) {
   const config = {
     subjects: {
-      icon: '📚',
+      icon: (
+        <svg className="w-8 h-8 text-muted-foreground/60" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+        </svg>
+      ),
       title: 'ยังไม่มีวิชา',
       description:
         'สร้างวิชาแรกของคุณเพื่อเริ่มจัดระเบียบโน้ตและข้อสอบ',
       actionLabel: 'สร้างวิชา',
     },
     notes: {
-      icon: '📄',
+      icon: (
+        <svg className="w-8 h-8 text-muted-foreground/60" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+        </svg>
+      ),
       title: 'ยังไม่มีโน้ตที่อัปโหลด',
       description:
         'อัปโหลดโน้ต PDF แรกของคุณเพื่อเริ่มสร้างฐานความรู้',
       actionLabel: 'อัปโหลดโน้ต',
     },
     exams: {
-      icon: '📝',
+      icon: (
+        <svg className="w-8 h-8 text-muted-foreground/60" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M3 4a2 2 0 012-2h10a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V4zm2 0h10v12H5V4zm2 3a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zm0 3a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zm0 3a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z" clipRule="evenodd" />
+        </svg>
+      ),
       title: 'ยังไม่มีข้อสอบที่สร้าง',
       description:
         'สร้างข้อสอบแรกจากโน้ตของคุณเพื่อทดสอบความรู้',

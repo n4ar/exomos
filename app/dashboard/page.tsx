@@ -5,6 +5,7 @@ import { BentoCard, BentoCardHeader, BentoCardFooter } from '@/components/BentoC
 import { SubjectBadge } from '@/components/SubjectBadge'
 import { EmptyDataState } from '@/components/EmptyState'
 import { MiniScoreCircle } from '@/components/ScoreCircle'
+import { Logo } from '@/components/Logo'
 import Link from 'next/link'
 import { ensureUserExists } from '@/lib/auth-helpers'
 
@@ -126,15 +127,7 @@ export default async function DashboardPage() {
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
-                <span className="text-white font-bold text-lg">E</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold">Exomos</h1>
-                <p className="text-xs text-muted-foreground">AI Exam Predictor</p>
-              </div>
-            </div>
+            <Logo size="md" showText={true} href="/dashboard" />
 
             <nav className="hidden md:flex items-center gap-2">
               <Link
@@ -435,7 +428,9 @@ export default async function DashboardPage() {
                   className="flex items-center gap-3 p-3 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors group"
                 >
                   <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span className="text-lg">📚</span>
+                    <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                    </svg>
                   </div>
                   <span className="font-medium">สร้างวิชา</span>
                 </Link>
@@ -444,7 +439,9 @@ export default async function DashboardPage() {
                   className="flex items-center gap-3 p-3 rounded-lg bg-accent/10 hover:bg-accent/20 transition-colors group"
                 >
                   <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span className="text-lg">📄</span>
+                    <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                    </svg>
                   </div>
                   <span className="font-medium">อัปโหลดโน้ต</span>
                 </Link>
@@ -453,7 +450,9 @@ export default async function DashboardPage() {
                   className="flex items-center gap-3 p-3 rounded-lg bg-secondary/10 hover:bg-secondary/20 transition-colors group"
                 >
                   <div className="w-8 h-8 rounded-lg bg-secondary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span className="text-lg">🤖</span>
+                    <svg className="w-4 h-4 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
                   </div>
                   <span className="font-medium">สร้างข้อสอบ</span>
                 </Link>
@@ -468,7 +467,12 @@ export default async function DashboardPage() {
               <h3 className="text-lg font-bold mb-4">ข้อสอบล่าสุด</h3>
               {recentExams.length === 0 ? (
                 <div className="text-center py-8">
-                  <div className="text-4xl mb-2">📝</div>
+                  <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                      <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                    </svg>
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     ยังไม่มีข้อสอบ
                   </p>
@@ -506,20 +510,6 @@ export default async function DashboardPage() {
                   })}
                 </div>
               )}
-            </BentoCard>
-
-            {/* Motivational Quote */}
-            <BentoCard
-              className="bg-gradient-to-br from-accent/5 to-secondary/5 border-accent/20 animate-scale-in"
-              style={{ animationDelay: '1.1s', opacity: 0 } as any}
-            >
-              <div className="text-4xl mb-4">💡</div>
-              <p className="text-sm font-medium mb-2 leading-relaxed">
-                "การศึกษาคือการจุดประกายความคิด ไม่ใช่การเติมเต็มภาชนะ"
-              </p>
-              <p className="text-xs text-muted-foreground">
-                — William Butler Yeats
-              </p>
             </BentoCard>
           </div>
         </div>

@@ -74,6 +74,21 @@ export function NotesClient({ initialNotes, subjects }: NotesClientProps) {
     }
   }
 
+  const handleViewPdf = async (noteId: string) => {
+    try {
+      const response = await fetch(`/api/notes/${noteId}/url`)
+
+      if (!response.ok) {
+        throw new Error('ไม่สามารถโหลด PDF ได้')
+      }
+
+      const { url } = await response.json()
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } catch (error: any) {
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการเปิด PDF')
+    }
+  }
+
   return (
     <>
       {/* Filters and Upload Section */}
@@ -136,7 +151,13 @@ export function NotesClient({ initialNotes, subjects }: NotesClientProps) {
       {/* Empty State for No Subjects */}
       {subjects.length === 0 && (
         <BentoCard className="text-center py-12">
-          <div className="text-4xl mb-4">📚</div>
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+              <svg className="w-8 h-8 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+              </svg>
+            </div>
+          </div>
           <h3 className="text-xl font-semibold mb-2">สร้างวิชาก่อน</h3>
           <p className="text-muted-foreground mb-4">
             คุณต้องสร้างวิชาอย่างน้อย 1 วิชาก่อนอัปโหลดโน้ต
@@ -220,14 +241,12 @@ export function NotesClient({ initialNotes, subjects }: NotesClientProps) {
               </div>
 
               <BentoCardFooter>
-                <a
-                  href={note.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => handleViewPdf(note.id)}
                   className="text-sm text-primary hover:underline font-medium"
                 >
                   ดู PDF →
-                </a>
+                </button>
                 <button
                   onClick={() => handleDeleteNote(note.id)}
                   className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
