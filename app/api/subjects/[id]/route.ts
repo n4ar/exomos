@@ -90,7 +90,7 @@ export async function GET(
           },
         },
         notes: {
-          orderBy: { createdAt: 'desc' },
+          orderBy: { uploadedAt: 'desc' },
           take: 10,
         },
         exams: {

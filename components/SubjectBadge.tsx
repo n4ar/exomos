@@ -1,7 +1,8 @@
 import { cn } from '@/lib/utils'
 
 interface SubjectBadgeProps {
-  name: string
+  name?: string
+  children?: React.ReactNode
   color?: string
   size?: 'sm' | 'md' | 'lg'
   variant?: 'solid' | 'outline' | 'soft'
@@ -16,11 +17,13 @@ const sizeClasses = {
 
 export function SubjectBadge({
   name,
+  children,
   color = '#6366f1',
   size = 'md',
   variant = 'soft',
   className,
 }: SubjectBadgeProps) {
+  const displayName = children || name
   const getVariantStyles = () => {
     switch (variant) {
       case 'solid':
@@ -61,7 +64,7 @@ export function SubjectBadge({
         className="w-1.5 h-1.5 rounded-full animate-pulse"
         style={{ backgroundColor: color }}
       />
-      <span className="truncate max-w-[120px]">{name}</span>
+      <span className="truncate max-w-[120px]">{displayName}</span>
     </span>
   )
 }
@@ -102,8 +105,8 @@ export function SubjectColorPicker({ value, onChange }: SubjectColorPickerProps)
             )}
             style={{
               backgroundColor: color,
-              ringColor: color,
-            }}
+              '--tw-ring-color': color,
+            } as React.CSSProperties}
             aria-label={`Select color ${color}`}
           />
         ))}

@@ -8,6 +8,7 @@ interface ScoreCircleProps {
   showLabel?: boolean
   showPercentage?: boolean
   variant?: 'default' | 'gradient' | 'status'
+  status?: 'excellent' | 'good' | 'average' | 'poor'
   className?: string
 }
 
@@ -19,6 +20,7 @@ export function ScoreCircle({
   showLabel = true,
   showPercentage = true,
   variant = 'gradient',
+  status: _status,
   className,
 }: ScoreCircleProps) {
   const percentage = Math.min(Math.round((score / maxScore) * 100), 100)

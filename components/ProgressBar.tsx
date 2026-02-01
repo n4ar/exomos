@@ -1,8 +1,9 @@
 import { cn } from '@/lib/utils'
 
 interface ProgressBarProps {
-  current: number
-  total: number
+  current?: number
+  total?: number
+  value?: number
   showLabel?: boolean
   showPercentage?: boolean
   variant?: 'default' | 'gradient' | 'striped'
@@ -19,18 +20,27 @@ const sizeClasses = {
 export function ProgressBar({
   current,
   total,
+  value,
   showLabel = true,
   showPercentage = true,
   variant = 'gradient',
   size = 'md',
   className,
 }: ProgressBarProps) {
-  const percentage = Math.min(Math.round((current / total) * 100), 100)
+  // Support both current/total and value props
+  const percentage = value !== undefined
+    ? Math.min(Math.round(value), 100)
+    : (current !== undefined && total !== undefined && total > 0)
+      ? Math.min(Math.round((current / total) * 100), 100)
+      : 0
+
+  // For label display, use current/total if provided
+  const showCurrentTotal = current !== undefined && total !== undefined
 
   return (
     <div className={cn('w-full space-y-2', className)}>
       {/* Label */}
-      {showLabel && (
+      {showLabel && showCurrentTotal && (
         <div className="flex items-center justify-between text-sm">
           <span className="font-medium text-foreground">
             {current} of {total}

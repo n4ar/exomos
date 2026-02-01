@@ -8,6 +8,7 @@ interface BentoCardProps {
   gradient?: boolean
   glass?: boolean
   onClick?: () => void
+  style?: React.CSSProperties
 }
 
 export function BentoCard({
@@ -17,10 +18,12 @@ export function BentoCard({
   gradient = false,
   glass = false,
   onClick,
+  style,
 }: BentoCardProps) {
   return (
     <div
       onClick={onClick}
+      style={style}
       className={cn(
         'relative rounded-2xl p-6 transition-all duration-500',
         'bg-card border border-border',

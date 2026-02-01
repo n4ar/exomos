@@ -31,8 +31,10 @@ export async function GET(
           orderBy: {
             orderIndex: 'asc',
           },
+          include: {
+            answers: true,
+          },
         },
-        answers: true,
       },
     })
 

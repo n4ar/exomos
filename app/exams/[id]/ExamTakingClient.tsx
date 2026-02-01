@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 interface Question {
   id: string
   questionText: string
-  options: string[]
+  options: string[] | unknown
   correctAnswer: string
   explanation: string | null
   orderIndex: number
@@ -50,8 +50,9 @@ export function ExamTakingClient({ exam }: ExamTakingClientProps) {
 
   // Get options with fallback for empty arrays
   const getQuestionOptions = (question: Question): string[] => {
-    if (question.options && question.options.length > 0) {
-      return question.options
+    const opts = question.options as string[] | null
+    if (opts && Array.isArray(opts) && opts.length > 0) {
+      return opts
     }
 
     // Fallback: If options is empty, check if it looks like a true/false question
