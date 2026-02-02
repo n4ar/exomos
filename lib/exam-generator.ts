@@ -60,6 +60,13 @@ export async function generateExam({
   })
 
   // 3. Generate questions using Gemini with strict RAG
+  // Add generation config to prevent truncation
+  const generationConfig = {
+    temperature: 0.7,
+    maxOutputTokens: 8192, // Increase token limit to prevent truncation
+    responseMimeType: 'application/json', // Request JSON response format
+  }
+
   const prompt = `คุณเป็นผู้สร้างข้อสอบที่เชี่ยวชาญ กรุณาสร้างข้อสอบจากเนื้อหาที่ให้มาเท่านั้น (Strict RAG)
 
 **กฎสำคัญ:**
@@ -94,22 +101,111 @@ ${topics && topics.length > 0 ? `- หัวข้อที่ต้องคร
 **หมายเหตุ:**
 - สำหรับข้อปรนัย (multiple_choice): ให้มี 4 ตัวเลือก
 - สำหรับข้อจริง/เท็จ (true_false): ให้มี 2 ตัวเลือก ["จริง", "เท็จ"]
+- ห้ามมีเครื่องหมาย comma หลังจาก property สุดท้ายใน object หรือ array
+- ตรวจสอบให้แน่ใจว่า JSON ถูกต้องตามรูปแบบ
+- ไม่ต้องเพิ่มข้อความหรือคำอธิบายใดๆ นอกจาก JSON
 
-กรุณาสร้างข้อสอบในรูปแบบ JSON เท่านั้น ไม่ต้องมีข้อความอื่น`
+กรุณาสร้างข้อสอบในรูปแบบ JSON เท่านั้น ไม่ต้องมีข้อความอื่น ตรวจสอบให้แน่ใจว่า JSON สมบูรณ์และปิดด้วย } ที่ตำแหน่งสุดท้าย`
 
-  const result = await model.generateContent(prompt)
+  // Retry logic for generating content
+  let result
+  let lastError
+  const maxRetries = 3
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Attempting to generate exam (attempt ${attempt}/${maxRetries})`)
+      result = await model.generateContent([{ text: prompt }], generationConfig)
+      break // Success, exit retry loop
+    } catch (error) {
+      lastError = error
+      console.error(`Attempt ${attempt} failed:`, error)
+      if (attempt < maxRetries) {
+        // Wait before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+      }
+    }
+  }
+
+  if (!result) {
+    console.error('All retry attempts failed:', lastError)
+    throw new Error('ไม่สามารถสร้างข้อสอบได้ กรุณาลองใหม่อีกครั้ง')
+  }
+
   const response = result.response.text()
 
   // Parse JSON response
   let questions: GeneratedQuestion[]
   try {
+    // Log response length for debugging
+    console.log(`Gemini response length: ${response.length} characters`)
+
     // Extract JSON from markdown code blocks if present
-    const jsonMatch = response.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/)
-    const jsonStr = jsonMatch ? jsonMatch[1] : response
+    let jsonStr = response.trim()
+
+    // Try to extract from code blocks first
+    const codeBlockMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+    if (codeBlockMatch) {
+      jsonStr = codeBlockMatch[1].trim()
+    }
+
+    // Remove any text before the first { and after the last }
+    const firstBrace = jsonStr.indexOf('{')
+    const lastBrace = jsonStr.lastIndexOf('}')
+
+    if (firstBrace === -1 || lastBrace === -1) {
+      throw new Error('No JSON object found in response')
+    }
+
+    jsonStr = jsonStr.substring(firstBrace, lastBrace + 1)
+
+    // Try to fix common JSON issues before parsing
+    // Remove trailing commas before closing brackets/braces
+    jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1')
+
+    // Log the extracted JSON for debugging
+    console.log('Extracted JSON preview:', jsonStr.substring(0, 500))
+    console.log('Extracted JSON length:', jsonStr.length)
+
     const parsed = JSON.parse(jsonStr)
+
+    if (!parsed.questions || !Array.isArray(parsed.questions)) {
+      throw new Error('Invalid response format: missing questions array')
+    }
+
     questions = parsed.questions
+
+    if (questions.length === 0) {
+      throw new Error('No questions generated')
+    }
+
+    // Validate question count expectations
+    const mcQuestions = questions.filter(q => q.type === 'multiple_choice').length
+    const tfQuestions = questions.filter(q => q.type === 'true_false').length
+
+    console.log(`Generated: ${mcQuestions} multiple choice, ${tfQuestions} true/false questions`)
+
+    // Warn if counts don't match (but don't fail)
+    if (mcQuestions !== multipleChoiceCount || tfQuestions !== trueFalseCount) {
+      console.warn(`Expected ${multipleChoiceCount} MC and ${trueFalseCount} TF, got ${mcQuestions} MC and ${tfQuestions} TF`)
+    }
+
+    console.log(`Successfully parsed ${questions.length} questions`)
   } catch (error) {
     console.error('Failed to parse Gemini response:', error)
+    console.error('Response preview:', response.substring(0, 1000))
+    console.error('Response end:', response.substring(Math.max(0, response.length - 500)))
+
+    // Attempt to save the failed response for debugging
+    try {
+      const fs = await import('fs/promises')
+      const debugPath = `/tmp/gemini-response-${Date.now()}.txt`
+      await fs.writeFile(debugPath, response, 'utf-8')
+      console.error(`Full response saved to: ${debugPath}`)
+    } catch (fsError) {
+      console.error('Could not save debug file:', fsError)
+    }
+
     throw new Error('ไม่สามารถสร้างข้อสอบได้ กรุณาลองใหม่อีกครั้ง')
   }
 
