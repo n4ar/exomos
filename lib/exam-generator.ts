@@ -3,7 +3,6 @@ import prisma from '@/lib/prisma'
 import { getExamContext } from '@/lib/rag-pipeline'
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
 export interface GenerateExamParams {
   userId: string
@@ -60,12 +59,15 @@ export async function generateExam({
   })
 
   // 3. Generate questions using Gemini with strict RAG
-  // Add generation config to prevent truncation
-  const generationConfig = {
-    temperature: 0.7,
-    maxOutputTokens: 8192, // Increase token limit to prevent truncation
-    responseMimeType: 'application/json', // Request JSON response format
-  }
+  // Create model with generation config to prevent truncation
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.5-flash',
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 8192, // Increase token limit to prevent truncation
+      responseMimeType: 'application/json', // Request JSON response format
+    },
+  })
 
   const prompt = `คุณเป็นผู้สร้างข้อสอบที่เชี่ยวชาญ กรุณาสร้างข้อสอบจากเนื้อหาที่ให้มาเท่านั้น (Strict RAG)
 
@@ -115,7 +117,7 @@ ${topics && topics.length > 0 ? `- หัวข้อที่ต้องคร
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`Attempting to generate exam (attempt ${attempt}/${maxRetries})`)
-      result = await model.generateContent([{ text: prompt }], generationConfig)
+      result = await model.generateContent([{ text: prompt }])
       break // Success, exit retry loop
     } catch (error) {
       lastError = error
