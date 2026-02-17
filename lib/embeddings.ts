@@ -4,7 +4,10 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
 // Use text-embedding-004 model (768 dimensions)
-const embeddingModel = genAI.getGenerativeModel({ model: 'text-embedding-004' })
+const embeddingModel = genAI.getGenerativeModel(
+  { model: 'text-embedding-004' },
+  { apiVersion: 'v1' }
+)
 
 export interface EmbeddingResult {
   embedding: number[]
