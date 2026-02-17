@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -8,10 +8,29 @@ export default function UpdatePasswordPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error || !session) {
+          router.replace('/auth/signin?message=กรุณาเข้าสู่ระบบเพื่อเปลี่ยนรหัสผ่าน')
+          return
+        }
+        setCheckingSession(false)
+      } catch (error) {
+        console.error('Error checking session:', error)
+        router.replace('/auth/signin')
+      }
+    }
+
+    checkSession()
+  }, [router, supabase.auth])
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,6 +67,14 @@ export default function UpdatePasswordPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    )
   }
 
   if (success) {
