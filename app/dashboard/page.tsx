@@ -148,6 +148,12 @@ export default async function DashboardPage() {
               >
                 โน้ต
               </Link>
+              <Link
+                href="/dashboard/settings"
+                className="px-4 py-2 text-sm rounded-lg hover:bg-muted transition-colors"
+              >
+                ตั้งค่า
+              </Link>
             </nav>
 
             <form action={handleSignOut}>
